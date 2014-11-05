@@ -57,7 +57,7 @@ configuration = {
 				@Property(name = TCPReader.CONFIG_PROPERTY_NAME_PORT2, defaultValue = "10134",
 				description = "The second port of the server used for the TCP connection.")
 })
-public final class TCPReader extends AbstractReaderPlugin {
+public class TCPReader extends AbstractReaderPlugin {
 
 	/** The name of the output port delivering the received records. */
 	public static final String OUTPUT_PORT_NAME_RECORDS = "monitoringRecords";
@@ -77,8 +77,21 @@ public final class TCPReader extends AbstractReaderPlugin {
 	private final ILookup<String> stringRegistry = new Lookup<String>();
 	private final CachedRecordFactoryCatalog cachedRecordFactoryCatalog = CachedRecordFactoryCatalog.getInstance();
 
+	private final ServerSocketChannelFactory serverSocketChannelFactory;
+
 	public TCPReader(final Configuration configuration, final IProjectContext projectContext) {
 		super(configuration, projectContext);
+		this.serverSocketChannelFactory = new DefaultServerSocketChannelFactory();
+		this.port1 = this.configuration.getIntProperty(CONFIG_PROPERTY_NAME_PORT1);
+		this.port2 = this.configuration.getIntProperty(CONFIG_PROPERTY_NAME_PORT2);
+	}
+
+	/**
+	 * Used for tests
+	 */
+	public TCPReader(final Configuration configuration, final IProjectContext projectContext, final ServerSocketChannelFactory serverSocketChannelFactory) {
+		super(configuration, projectContext);
+		this.serverSocketChannelFactory = serverSocketChannelFactory;
 		this.port1 = this.configuration.getIntProperty(CONFIG_PROPERTY_NAME_PORT1);
 		this.port2 = this.configuration.getIntProperty(CONFIG_PROPERTY_NAME_PORT2);
 	}
@@ -99,11 +112,11 @@ public final class TCPReader extends AbstractReaderPlugin {
 	}
 
 	@Override
-	public boolean read() {
+	public final boolean read() {
 		this.readerThread = Thread.currentThread();
 		ServerSocketChannel serversocket = null;
 		try {
-			serversocket = ServerSocketChannel.open();
+			serversocket = this.serverSocketChannelFactory.openServerSocket();
 			serversocket.socket().bind(new InetSocketAddress(this.port1));
 			if (this.log.isDebugEnabled()) {
 				this.log.debug("Listening on port " + this.port1);
