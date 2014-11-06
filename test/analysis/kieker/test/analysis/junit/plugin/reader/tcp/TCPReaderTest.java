@@ -38,6 +38,7 @@ public class TCPReaderTest {
 			Mockito.when(ssc.accept()).thenReturn(socketChannel);
 
 			Mockito.when(socketChannel.read(Matchers.isA(ByteBuffer.class))).thenAnswer(this.readBuffer());
+			Mockito.when(socketChannel.read(Matchers.isA(ByteBuffer.class))).thenReturn(-1);
 
 			return ssc;
 		}
