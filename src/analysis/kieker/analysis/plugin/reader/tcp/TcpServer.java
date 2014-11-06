@@ -55,15 +55,15 @@ public class TcpServer {
 	public boolean start() {
 		this.readerThread = Thread.currentThread();
 
-		ServerSocketChannel serversocket = null;
+		ServerSocketChannel serverSocketChannel = null;
 		try {
-			serversocket = this.serverSocketChannelFactory.openServerSocket();
-			serversocket.socket().bind(new InetSocketAddress(this.port));
+			serverSocketChannel = this.serverSocketChannelFactory.openServerSocket();
+			serverSocketChannel.socket().bind(new InetSocketAddress(this.port));
 			if (this.log.isDebugEnabled()) {
 				this.log.debug("Listening on port " + this.port);
 			}
 			// BEGIN also loop this one?
-			final SocketChannel socketChannel = serversocket.accept();
+			final SocketChannel socketChannel = serverSocketChannel.accept();
 			final ByteBuffer buffer = ByteBuffer.allocateDirect(this.messageBufferSize);
 			while ((socketChannel.read(buffer) != -1) && (!this.terminated)) {
 				buffer.flip();
@@ -90,9 +90,9 @@ public class TcpServer {
 			this.log.error("Error while reading", ex);
 			return false;
 		} finally {
-			if (null != serversocket) {
+			if (null != serverSocketChannel) {
 				try {
-					serversocket.close();
+					serverSocketChannel.close();
 				} catch (final IOException e) {
 					if (this.log.isDebugEnabled()) {
 						this.log.debug("Failed to close TCP connection!", e);
