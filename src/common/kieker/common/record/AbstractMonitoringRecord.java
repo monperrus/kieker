@@ -505,8 +505,12 @@ public abstract class AbstractMonitoringRecord implements IMonitoringRecord {
 		return AbstractMonitoringRecord.createFromArray(clazz, values);
 	}
 
+	// TODO remove if method registerStrings is deleted
+	private final ByteBuffer buffer = ByteBuffer.allocateDirect(100);
+
 	@Override
 	public void registerStrings(final IRegistry<String> stringRegistry) {
 		// TODO remove empty default implementation
+		this.writeBytes(this.buffer, stringRegistry);
 	}
 }
