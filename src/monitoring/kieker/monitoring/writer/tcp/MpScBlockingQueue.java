@@ -28,7 +28,7 @@ import org.jctools.queues.spec.Ordering;
 import org.jctools.queues.spec.Preference;
 
 /**
- * @author Nogge
+ * @author Christian Wulf
  *
  * @since 1.11
  */
