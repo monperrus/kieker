@@ -30,7 +30,7 @@ import kieker.common.util.registry.IRegistry;
 
 /**
  * @author Andre van Hoorn, Jan Waller, Nils Christian Ehmke
- * 
+ *
  * @since 1.2
  */
 public abstract class AbstractMonitoringRecord implements IMonitoringRecord {
@@ -94,10 +94,10 @@ public abstract class AbstractMonitoringRecord implements IMonitoringRecord {
 	/**
 	 * Provides an ordering of IMonitoringRecords by the loggingTimestamp.
 	 * Classes overriding the implementation should respect this ordering. (see #326)
-	 * 
+	 *
 	 * @param otherRecord
 	 *            The record to be compared.
-	 * 
+	 *
 	 * @return -1 if this object is less than, +1 if it is greater than or 0 if it is equal to the specified record.
 	 */
 	@Override
@@ -135,7 +135,7 @@ public abstract class AbstractMonitoringRecord implements IMonitoringRecord {
 	/**
 	 * This method checks the given arrays, making sure that they have the same length and that the value elements are compatible with the given value types. If the
 	 * arrays are not compatible, this method throws an {@link IllegalArgumentException}.
-	 * 
+	 *
 	 * @param values
 	 *            The values.
 	 * @param valueTypes
@@ -219,14 +219,14 @@ public abstract class AbstractMonitoringRecord implements IMonitoringRecord {
 	/**
 	 * This helper method converts the given array with string objects into an array containing objects from the specified type. (e.g. via the {@code valueOf}
 	 * methods).
-	 * 
+	 *
 	 * @param recordFields
 	 *            The array containing the string objects.
 	 * @param valueTypes
 	 *            The array containing the types the new array will have.
-	 * 
+	 *
 	 * @return An array of objects, converted from the given string array.
-	 * 
+	 *
 	 * @throws IllegalArgumentException
 	 *             If one or more of the given types are not supported.
 	 */
@@ -289,12 +289,12 @@ public abstract class AbstractMonitoringRecord implements IMonitoringRecord {
 
 	/**
 	 * This method tries to find a monitoring record class with the given name.
-	 * 
+	 *
 	 * @param classname
 	 *            The name of the class.
-	 * 
+	 *
 	 * @return A {@link Class} instance corresponding to the given name, if it exists.
-	 * 
+	 *
 	 * @throws MonitoringRecordException
 	 *             If either a class with the given name could not be found or if the class doesn't implement {@link IMonitoringRecord}.
 	 */
@@ -316,12 +316,12 @@ public abstract class AbstractMonitoringRecord implements IMonitoringRecord {
 	/**
 	 * This method delivers the types array of the given class, either by finding the declared field (in case of a factory record) or via the {@code getValueTypes}
 	 * method.
-	 * 
+	 *
 	 * @param clazz
 	 *            The record class.
-	 * 
+	 *
 	 * @return The value types of the specified record.
-	 * 
+	 *
 	 * @throws MonitoringRecordException
 	 *             If this method failed to access the value types.
 	 */
@@ -353,14 +353,14 @@ public abstract class AbstractMonitoringRecord implements IMonitoringRecord {
 
 	/**
 	 * This method creates a new monitoring record from the given data.
-	 * 
+	 *
 	 * @param clazz
 	 *            The class of the monitoring record.
 	 * @param values
 	 *            The array which will be used to initialize the fields of the record.
-	 * 
+	 *
 	 * @return An initialized record instance.
-	 * 
+	 *
 	 * @throws MonitoringRecordException
 	 *             If this method failed to create the record for some reason.
 	 */
@@ -397,16 +397,16 @@ public abstract class AbstractMonitoringRecord implements IMonitoringRecord {
 
 	/**
 	 * This method creates a new monitoring record from a byte buffer containing a serialized record.
-	 * 
+	 *
 	 * @param clazzid
 	 *            The class id of the monitoring record.
 	 * @param buffer
 	 *            The byte buffer containing the data.
 	 * @param stringRegistry
 	 *            the string registry used to find the correct strings for the given string ids in the serialization.
-	 * 
+	 *
 	 * @return An initialized record instance.
-	 * 
+	 *
 	 * @throws MonitoringRecordException
 	 *             If this method failed to create the record for some reason.
 	 * @throws BufferUnderflowException
@@ -451,14 +451,14 @@ public abstract class AbstractMonitoringRecord implements IMonitoringRecord {
 
 	/**
 	 * This method creates a new monitoring record from the given data encoded in strings.
-	 * 
+	 *
 	 * @param clazz
 	 *            The class of the monitoring record.
 	 * @param values
 	 *            The string array which will be used to initialize the fields of the record.
-	 * 
+	 *
 	 * @return An initialized record instance.
-	 * 
+	 *
 	 * @throws MonitoringRecordException
 	 *             If this method failed to create the record for some reason.
 	 */
@@ -493,6 +493,7 @@ public abstract class AbstractMonitoringRecord implements IMonitoringRecord {
 			throw new MonitoringRecordException("Failed to instatiate new monitoring record of type " + clazz.getName(), ex);
 		}
 	}
+
 	public static final IMonitoringRecord createFromByteBuffer(final String recordClassName, final ByteBuffer buffer, final IRegistry<String> stringRegistry)
 			throws BufferUnderflowException, MonitoringRecordException {
 		final int clazzid = stringRegistry.get(recordClassName);
@@ -502,5 +503,10 @@ public abstract class AbstractMonitoringRecord implements IMonitoringRecord {
 	public static final IMonitoringRecord createFromArray(final String recordClassName, final Object[] values) throws MonitoringRecordException {
 		final Class<? extends IMonitoringRecord> clazz = AbstractMonitoringRecord.classForName(recordClassName);
 		return AbstractMonitoringRecord.createFromArray(clazz, values);
+	}
+
+	@Override
+	public void registerStrings(final IRegistry<String> stringRegistry) {
+		// TODO remove empty default implementation
 	}
 }

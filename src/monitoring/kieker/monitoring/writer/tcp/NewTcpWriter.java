@@ -135,8 +135,7 @@ class NewTcpWriterThread extends AbstractAsyncThread {
 			buffer.clear();
 		}
 
-		// TODO uncomment
-		// monitoringRecord.registerStrings(this.stringRegistry);
+		monitoringRecord.registerStrings(this.stringRegistry);
 
 		final int recordClassId = this.monitoringController.getUniqueIdForString(monitoringRecord.getClass().getName());
 
