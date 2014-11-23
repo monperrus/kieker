@@ -324,6 +324,7 @@
 			<fileset dir="${lib.dir}">
 				<include name="hamcrest-core-*.jar" />
 				<include name="junit-*.jar" />
+				<include name="testing/mockito-*.jar" />
 			</fileset>
 			<!-- This part is necessary as one of the tests uses helper methods from this jar. -->
 			<fileset dir="${lib.dir}/framework-libs/cxf">
@@ -343,6 +344,7 @@
 			<fileset dir="${lib.dir}">
 				<include name="hamcrest-core-*.jar" />
 				<include name="junit-*.jar" />
+				<include name="testing/mockito-*.jar" />
 			</fileset>
 			<!-- This part is necessary as one of the tests uses helper methods from this jar. -->
 			<fileset dir="${lib.dir}/framework-libs/cxf">
@@ -362,6 +364,7 @@
 			<fileset dir="${lib.dir}">
 				<include name="hamcrest-core-*.jar" />
 				<include name="junit-*.jar" />
+				<include name="testing/mockito-*.jar" />
 				<include name="framework-libs/spring/*.jar" />
 				<include name="framework-libs/cxf/*.jar" />
 			</fileset>
@@ -380,6 +383,7 @@
 			<fileset dir="${lib.dir}">
 				<include name="hamcrest-core-*.jar" />
 				<include name="junit-*.jar" />
+				<include name="testing/mockito-*.jar" />
 			</fileset>
 			<!-- This part is necessary as one of the tests uses helper methods from this jar. -->
 			<fileset dir="${lib.dir}/framework-libs/cxf">
@@ -399,6 +403,7 @@
 			<fileset dir="${lib.dir}">
 				<include name="hamcrest-core-*.jar" />
 				<include name="junit-*.jar" />
+				<include name="testing/mockito-*.jar" />
 				<include name="activemq-*.jar" />
 				<include name="reflections-*.jar"/>
 				<include name="geronimo-j2ee-management_1.1_spec-*.jar"/>

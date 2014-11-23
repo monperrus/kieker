@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************/
 
-package kieker.monitoring.writer.tcp;
+package kieker.common.util;
 
 import java.util.Collection;
 import java.util.Iterator;

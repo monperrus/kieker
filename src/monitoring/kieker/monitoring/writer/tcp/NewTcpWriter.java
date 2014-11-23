@@ -70,6 +70,11 @@ public final class NewTcpWriter extends AbstractAsyncWriter {
 		this.addWorker(new NewTcpWriterThread(this.monitoringController, this.blockingQueue, this.hostname, this.port1, this.bufferSize, this.flush));
 		// this.addWorker(new NewTcpWriterThread(this.monitoringController, this.prioritizedBlockingQueue, this.hostname, this.port2, this.bufferSize, this.flush));
 	}
+
+	@Override
+	public boolean newMonitoringRecordNonBlocking(final IMonitoringRecord monitoringRecord) {
+		return this.newMonitoringRecord(monitoringRecord);
+	}
 }
 
 /**

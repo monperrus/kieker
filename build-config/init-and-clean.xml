@@ -88,6 +88,7 @@
 			<fileset dir="${lib.dir}">
 				<include name="commons-logging-*.jar" />
 				<include name="slf4j-api-*.jar" />
+				<include name="jctools-core-*.jar" />
 			</fileset>
 		</path>
 
