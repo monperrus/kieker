@@ -27,7 +27,7 @@ import kieker.monitoring.core.controller.IMonitoringController;
 
 /**
  * @author Andre van Hoorn, Jan Waller
- * 
+ *
  * @since 1.3
  */
 public abstract class AbstractAsyncThread extends Thread {
@@ -41,7 +41,7 @@ public abstract class AbstractAsyncThread extends Thread {
 
 	/**
 	 * Creates a new instance of this class using the given parameters.
-	 * 
+	 *
 	 * @param monitoringController
 	 *            The monitoring controller for the current monitoring session.
 	 * @param writeQueue
@@ -55,7 +55,7 @@ public abstract class AbstractAsyncThread extends Thread {
 	/**
 	 * Initializes the shutdown of this thread if necessary. The method returns immediately in every case and counts the latch down eventually (assuming that no
 	 * exception occurs).
-	 * 
+	 *
 	 * @param cdl
 	 *            The latch which will be count down once the thread has been terminated.
 	 */
@@ -75,7 +75,7 @@ public abstract class AbstractAsyncThread extends Thread {
 
 	/**
 	 * Can be used to determine whether the thread is in the finished state or not.
-	 * 
+	 *
 	 * @return true iff the thread has set the finished flag.
 	 */
 	public final boolean isFinished() {
@@ -143,7 +143,7 @@ public abstract class AbstractAsyncThread extends Thread {
 
 	/**
 	 * Returns a human-readable information string about the writer's configuration and state.
-	 * 
+	 *
 	 * @return the information string.
 	 */
 	@Override
@@ -157,10 +157,10 @@ public abstract class AbstractAsyncThread extends Thread {
 
 	/**
 	 * Inheriting classes should implement this method to consume the given record by, for example, sending it to a JMS client or by writing it to the file sysytem.
-	 * 
+	 *
 	 * @param monitoringRecord
 	 *            The record to consume.
-	 * 
+	 *
 	 * @throws Exception
 	 *             Indicates that something went wrong during the consumption.
 	 */
