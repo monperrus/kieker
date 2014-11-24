@@ -26,14 +26,14 @@ import kieker.analysis.AnalysisController;
 import kieker.analysis.AnalysisControllerThread;
 import kieker.analysis.exception.AnalysisConfigurationException;
 import kieker.analysis.plugin.filter.forward.ListCollectionFilter;
-import kieker.analysis.plugin.reader.tcp.TCPReader;
+import kieker.analysis.plugin.reader.tcp.NewTcpReader;
 import kieker.common.configuration.Configuration;
 import kieker.common.record.IMonitoringRecord;
 import kieker.common.record.controlflow.OperationExecutionRecord;
 import kieker.monitoring.core.configuration.ConfigurationFactory;
 import kieker.monitoring.core.controller.IMonitoringController;
 import kieker.monitoring.core.controller.MonitoringController;
-import kieker.monitoring.writer.tcp.TCPWriter;
+import kieker.monitoring.writer.tcp.NewTcpWriter;
 import kieker.tpmon.monitoringRecord.executions.KiekerExecutionRecord;
 
 import kieker.test.common.junit.AbstractKiekerTest;
@@ -43,7 +43,7 @@ import kieker.test.common.junit.AbstractKiekerTest;
  *
  * @since 1.11
  */
-public class TCPReaderTest extends AbstractKiekerTest {
+public class NewTcpWriterReaderTest extends AbstractKiekerTest {
 
 	private static final String PORT1 = "10133";
 	private static final String PORT2 = "10134";
@@ -136,9 +136,20 @@ public class TCPReaderTest extends AbstractKiekerTest {
 
 	private void configureMonitoring() {
 		final Configuration monitoringConfig = ConfigurationFactory.createDefaultConfiguration();
-		monitoringConfig.setProperty(ConfigurationFactory.WRITER_CLASSNAME, TCPWriter.class.getName());
-		monitoringConfig.setProperty(TCPWriter.CONFIG_PORT1, TCPReaderTest.PORT1);
-		monitoringConfig.setProperty(TCPWriter.CONFIG_PORT2, TCPReaderTest.PORT2);
+		// monitoringConfig.setProperty(ConfigurationFactory.WRITER_CLASSNAME, TCPWriter.class.getName());
+		// monitoringConfig.setProperty(TCPWriter.CONFIG_PORT1, TCPReaderTest.PORT1);
+		// monitoringConfig.setProperty(TCPWriter.CONFIG_PORT2, TCPReaderTest.PORT2);
+		monitoringConfig.setProperty(ConfigurationFactory.WRITER_CLASSNAME, NewTcpWriter.class.getName());
+		monitoringConfig.setProperty(NewTcpWriter.CONFIG_PORT1, NewTcpWriterReaderTest.PORT1);
+		// kieker.monitoring.writer.tcp.NewTcpWriter.hostname=localhost
+		// kieker.monitoring.writer.tcp.NewTcpWriter.port1=10133
+		// kieker.monitoring.writer.tcp.NewTcpWriter.port2=10134
+		// kieker.monitoring.writer.tcp.NewTcpWriter.bufferSize=65535
+		// kieker.monitoring.writer.tcp.NewTcpWriter.flush=false
+		// kieker.monitoring.writer.tcp.NewTcpWriter.QueueSize=10000
+		// kieker.monitoring.writer.tcp.NewTcpWriter.QueueSize=100
+		// kieker.monitoring.writer.tcp.NewTcpWriter.QueueFullBehavior=0
+		// kieker.monitoring.writer.tcp.NewTcpWriter.MaxShutdownDelay=-1
 		this.monitoringController = MonitoringController.createInstance(monitoringConfig);
 	}
 
@@ -146,13 +157,16 @@ public class TCPReaderTest extends AbstractKiekerTest {
 		this.analysisController = new AnalysisController();
 
 		final Configuration readerConfig = new Configuration();
-		readerConfig.setProperty(TCPReader.CONFIG_PROPERTY_NAME_PORT1, TCPReaderTest.PORT1);
-		readerConfig.setProperty(TCPReader.CONFIG_PROPERTY_NAME_PORT2, TCPReaderTest.PORT2);
-		final TCPReader tcpReader = new TCPReader(readerConfig, this.analysisController);
+		// readerConfig.setProperty(TCPReader.CONFIG_PROPERTY_NAME_PORT1, TCPReaderTest.PORT1);
+		// readerConfig.setProperty(TCPReader.CONFIG_PROPERTY_NAME_PORT2, TCPReaderTest.PORT2);
+		// final TCPReader tcpReader = new TCPReader(readerConfig, this.analysisController);
+		readerConfig.setProperty(NewTcpReader.CONFIG_PROPERTY_NAME_PORT1, NewTcpWriterReaderTest.PORT1);
+		final NewTcpReader tcpReader = new NewTcpReader(readerConfig, this.analysisController);
 
 		this.sinkFilter = new ListCollectionFilter<IMonitoringRecord>(new Configuration(), this.analysisController);
 
-		this.analysisController.connect(tcpReader, TCPReader.OUTPUT_PORT_NAME_RECORDS, this.sinkFilter, ListCollectionFilter.INPUT_PORT_NAME);
+		// this.analysisController.connect(tcpReader, TCPReader.OUTPUT_PORT_NAME_RECORDS, this.sinkFilter, ListCollectionFilter.INPUT_PORT_NAME);
+		this.analysisController.connect(tcpReader, NewTcpReader.OUTPUT_PORT_NAME_RECORDS, this.sinkFilter, ListCollectionFilter.INPUT_PORT_NAME);
 	}
 
 }

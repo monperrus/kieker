@@ -27,6 +27,7 @@ import kieker.common.configuration.Configuration;
 import kieker.common.logging.Log;
 import kieker.common.logging.LogFactory;
 import kieker.common.record.IMonitoringRecord;
+import kieker.common.record.misc.RegistryRecord;
 import kieker.common.util.registry.IRegistry;
 import kieker.monitoring.core.controller.IMonitoringController;
 import kieker.monitoring.writer.AbstractAsyncThread;
@@ -39,12 +40,16 @@ import kieker.monitoring.writer.AbstractAsyncWriter;
  * @since 1.8
  */
 public final class NewTcpWriter extends AbstractAsyncWriter {
+
+	private static final Log LOG = LogFactory.getLog(NewTcpWriter.class);
 	private static final String PREFIX = NewTcpWriter.class.getName() + ".";
+
 	public static final String CONFIG_HOSTNAME = PREFIX + "hostname"; // NOCS (afterPREFIX)
 	public static final String CONFIG_PORT1 = PREFIX + "port1"; // NOCS (afterPREFIX)
 	// public static final String CONFIG_PORT2 = PREFIX + "port2"; // NOCS (afterPREFIX)
 	public static final String CONFIG_BUFFERSIZE = PREFIX + "bufferSize"; // NOCS (afterPREFIX)
 	public static final String CONFIG_FLUSH = PREFIX + "flush"; // NOCS (afterPREFIX)
+	public static final int REGISTRY_RECORD_CLASS_ID = -1;
 
 	// TODO final, JCTools
 	private Queue<IMonitoringRecord> queue;
@@ -54,6 +59,8 @@ public final class NewTcpWriter extends AbstractAsyncWriter {
 	// private final int port2;
 	private final int bufferSize;
 	private final boolean flush;
+
+	private NewTcpWriterThread worker;
 
 	public NewTcpWriter(final Configuration configuration) {
 		super(configuration);
@@ -67,13 +74,21 @@ public final class NewTcpWriter extends AbstractAsyncWriter {
 
 	@Override
 	protected void init() throws Exception {
-		this.addWorker(new NewTcpWriterThread(this.monitoringController, this.blockingQueue, this.hostname, this.port1, this.bufferSize, this.flush));
+		this.worker = new NewTcpWriterThread(this.monitoringController, this.blockingQueue, this.hostname, this.port1, this.bufferSize, this.flush);
+		this.addWorker(this.worker);
 		// this.addWorker(new NewTcpWriterThread(this.monitoringController, this.prioritizedBlockingQueue, this.hostname, this.port2, this.bufferSize, this.flush));
 	}
 
 	@Override
 	public boolean newMonitoringRecordNonBlocking(final IMonitoringRecord monitoringRecord) {
-		return this.newMonitoringRecord(monitoringRecord); // ignore prioritizedBlockingQueue
+		// return this.newMonitoringRecord(monitoringRecord); // ignore prioritizedBlockingQueue
+		try {
+			this.worker.consume(monitoringRecord);
+			return true;
+		} catch (final Exception e) {
+			LOG.warn("An exception occurred", e);
+		}
+		return false;
 	}
 }
 
@@ -114,11 +129,17 @@ class NewTcpWriterThread extends AbstractAsyncThread {
 
 		monitoringRecord.registerStrings(this.stringRegistry);
 
-		final int recordClassId = this.monitoringController.getUniqueIdForString(monitoringRecord.getClass().getName());
+		final int recordClassId;
+		if (monitoringRecord instanceof RegistryRecord) {
+			recordClassId = NewTcpWriter.REGISTRY_RECORD_CLASS_ID;
+		} else {
+			recordClassId = this.monitoringController.getUniqueIdForString(monitoringRecord.getClass().getName());
+		}
 
 		buffer.putInt(recordClassId);
 		buffer.putLong(monitoringRecord.getLoggingTimestamp());
 		monitoringRecord.writeBytes(buffer, this.stringRegistry);
+		System.out.println("WRITTEN: " + monitoringRecord.getClass().getName());
 
 		if (this.flush) {
 			buffer.flip();

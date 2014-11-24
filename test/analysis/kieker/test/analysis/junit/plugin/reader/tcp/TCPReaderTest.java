@@ -26,8 +26,10 @@ import kieker.common.record.flow.trace.operation.BeforeOperationEvent;
 import kieker.common.util.registry.IRegistry;
 import kieker.common.util.registry.Registry;
 
+import kieker.test.common.junit.AbstractKiekerTest;
+
 //@RunWith(MockitoJUnitRunner.class)
-public class TCPReaderTest {
+public class TCPReaderTest extends AbstractKiekerTest {
 
 	private static class MockingServerSocketChannelFactory implements ServerSocketChannelFactory {
 		final IRegistry<String> stringRegistry;

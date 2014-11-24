@@ -510,7 +510,7 @@ public abstract class AbstractMonitoringRecord implements IMonitoringRecord {
 	}
 
 	// TODO remove if method registerStrings is deleted
-	private final ByteBuffer buffer = ByteBuffer.allocateDirect(100);
+	private final ByteBuffer buffer = ByteBuffer.allocateDirect(1024);
 
 	@Override
 	public void registerStrings(final IRegistry<String> stringRegistry) {
