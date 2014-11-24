@@ -73,7 +73,7 @@ public final class NewTcpWriter extends AbstractAsyncWriter {
 
 	@Override
 	public boolean newMonitoringRecordNonBlocking(final IMonitoringRecord monitoringRecord) {
-		return this.newMonitoringRecord(monitoringRecord);
+		return this.newMonitoringRecord(monitoringRecord); // ignore prioritizedBlockingQueue
 	}
 }
 
@@ -102,34 +102,6 @@ class NewTcpWriterThread extends AbstractAsyncThread {
 
 	@Override
 	protected void consume(final IMonitoringRecord monitoringRecord) throws Exception {
-		// if (monitoringRecord instanceof RegistryRecord) {
-		// final ByteBuffer buffer = ByteBuffer.allocateDirect(monitoringRecord.getSize());
-		// monitoringRecord.writeBytes(buffer, this.stringRegistry);
-		// buffer.flip();
-		// while (buffer.hasRemaining()) {
-		// this.socketChannel.write(buffer);
-		// }
-		// } else {
-		// final ByteBuffer buffer = this.byteBuffer;
-		// if ((monitoringRecord.getSize() + 4 + 8) > buffer.remaining()) {
-		// buffer.flip();
-		// while (buffer.hasRemaining()) {
-		// this.socketChannel.write(buffer);
-		// }
-		// buffer.clear();
-		// }
-		// buffer.putInt(this.monitoringController.getUniqueIdForString(monitoringRecord.getClass().getName()));
-		// buffer.putLong(monitoringRecord.getLoggingTimestamp());
-		// monitoringRecord.writeBytes(buffer, this.stringRegistry);
-		// if (this.flush) {
-		// buffer.flip();
-		// while (buffer.hasRemaining()) {
-		// this.socketChannel.write(buffer);
-		// }
-		// buffer.clear();
-		// }
-		// }
-
 		final ByteBuffer buffer = this.byteBuffer;
 
 		if ((monitoringRecord.getSize() + 4 + 8) > buffer.remaining()) {
