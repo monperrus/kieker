@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************/
 
-package kieker.analysis.plugin.reader.tcp;
+package kieker.analysis.plugin.reader.tcp.newversion;
 
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
@@ -24,6 +24,7 @@ import kieker.analysis.plugin.annotation.OutputPort;
 import kieker.analysis.plugin.annotation.Plugin;
 import kieker.analysis.plugin.annotation.Property;
 import kieker.analysis.plugin.reader.AbstractReaderPlugin;
+import kieker.analysis.plugin.reader.tcp.TcpServer;
 import kieker.common.configuration.Configuration;
 import kieker.common.exception.RecordInstantiationException;
 import kieker.common.record.IMonitoringRecord;
@@ -40,16 +41,16 @@ import kieker.monitoring.writer.tcp.NewTcpWriter;
  * @since 1.11
  */
 @Plugin(description = "A reader which reads records from a TCP port",
-outputPorts = {
-		@OutputPort(name = NewTcpReader.OUTPUT_PORT_NAME_RECORDS, eventTypes = { IMonitoringRecord.class }, description = "Output Port of the TCPReader")
-},
-configuration = {
-		@Property(name = NewTcpReader.CONFIG_PROPERTY_NAME_PORT1, defaultValue = "10133",
-				description = "The first port of the server used for the TCP connection."),
-				@Property(name = NewTcpReader.CONFIG_PROPERTY_NAME_PORT2, defaultValue = "10134",
-				description = "The second port of the server used for the TCP connection.")
-})
-public final class NewTcpReader extends AbstractReaderPlugin {
+		outputPorts = {
+			@OutputPort(name = NewTcpReader.OUTPUT_PORT_NAME_RECORDS, eventTypes = { IMonitoringRecord.class }, description = "Output Port of the TCPReader")
+		},
+		configuration = {
+			@Property(name = NewTcpReader.CONFIG_PROPERTY_NAME_PORT1, defaultValue = "10133",
+					description = "The first port of the server used for the TCP connection."),
+			@Property(name = NewTcpReader.CONFIG_PROPERTY_NAME_PORT2, defaultValue = "10134",
+					description = "The second port of the server used for the TCP connection.")
+		})
+public final class NewTcpReader extends AbstractReaderPlugin implements ReadListener {
 
 	/** The name of the output port delivering the received records. */
 	public static final String OUTPUT_PORT_NAME_RECORDS = "monitoringRecords";
@@ -72,35 +73,35 @@ public final class NewTcpReader extends AbstractReaderPlugin {
 	}
 
 	/**
-	 * Used in tests
+	 * Used in tests; declared 'public' because kieker does not use the same package for tests
+	 *
+	 * @param byteBufferFactory
 	 */
 	public NewTcpReader(final Configuration configuration, final IProjectContext projectContext, final ServerSocketChannelFactory serverSocketChannelFactory) {
 		super(configuration, projectContext);
 		this.createMonitoringRecordReader(serverSocketChannelFactory);
 	}
 
+	@Override
+	public void read(final ByteBuffer buffer) {
+		final int clazzId = buffer.getInt();
+		final long loggingTimestamp = buffer.getLong();
+
+		if (clazzId == NewTcpWriter.REGISTRY_RECORD_CLASS_ID) {
+			this.deserializeStringRecord(clazzId, loggingTimestamp, buffer);
+		} else {
+			this.deserializeMonitoringRecord(clazzId, loggingTimestamp, buffer);
+		}
+	}
+
 	protected void createMonitoringRecordReader(final ServerSocketChannelFactory serverSocketChannelFactory) {
 		final int port = this.configuration.getIntProperty(CONFIG_PROPERTY_NAME_PORT1);
 		final int messageBufferSize = MESSAGE_BUFFER_SIZE;
-		final BufferListener listener = new BufferListener() {
-			@SuppressWarnings("synthetic-access")
-			@Override
-			public void read(final ByteBuffer buffer) {
-				final int clazzId = buffer.getInt();
-				final long loggingTimestamp = buffer.getLong();
-
-				if (clazzId == NewTcpWriter.REGISTRY_RECORD_CLASS_ID) {
-					NewTcpReader.this.deserializeStringRecord(clazzId, loggingTimestamp, buffer);
-				} else {
-					NewTcpReader.this.deserializeMonitoringRecord(clazzId, loggingTimestamp, buffer);
-				}
-			}
-		};
-		this.monitoringRecordReader = new TcpServer(serverSocketChannelFactory, port, messageBufferSize, listener, LOG);
+		this.monitoringRecordReader = new TcpServer(serverSocketChannelFactory, port, messageBufferSize, this, LOG);
 	}
 
 	protected void deserializeStringRecord(final int clazzId, final long loggingTimestamp, final ByteBuffer buffer) {
-		RegistryRecord.registerRecordInRegistry(buffer, NewTcpReader.this.stringRegistry);
+		RegistryRecord.registerRecordInRegistry(buffer, this.stringRegistry);
 	}
 
 	protected void deserializeMonitoringRecord(final int clazzId, final long loggingTimestamp, final ByteBuffer buffer) {

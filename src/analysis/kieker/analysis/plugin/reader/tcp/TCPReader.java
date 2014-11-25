@@ -24,6 +24,9 @@ import kieker.analysis.plugin.annotation.OutputPort;
 import kieker.analysis.plugin.annotation.Plugin;
 import kieker.analysis.plugin.annotation.Property;
 import kieker.analysis.plugin.reader.AbstractReaderPlugin;
+import kieker.analysis.plugin.reader.tcp.newversion.DefaultServerSocketChannelFactory;
+import kieker.analysis.plugin.reader.tcp.newversion.ReadListener;
+import kieker.analysis.plugin.reader.tcp.newversion.ServerSocketChannelFactory;
 import kieker.common.configuration.Configuration;
 import kieker.common.exception.RecordInstantiationException;
 import kieker.common.record.IMonitoringRecord;
@@ -84,7 +87,7 @@ public class TCPReader extends AbstractReaderPlugin {
 	protected void createMonitoringRecordReader(final ServerSocketChannelFactory serverSocketChannelFactory) {
 		final int port = this.configuration.getIntProperty(CONFIG_PROPERTY_NAME_PORT1);
 		final int messageBufferSize = MESSAGE_BUFFER_SIZE;
-		final BufferListener listener = new BufferListener() {
+		final ReadListener listener = new ReadListener() {
 			@SuppressWarnings("synthetic-access")
 			@Override
 			public void read(final ByteBuffer buffer) {
@@ -111,7 +114,7 @@ public class TCPReader extends AbstractReaderPlugin {
 	protected void createStringRecordReader(final ServerSocketChannelFactory serverSocketChannelFactory) {
 		final int port = this.configuration.getIntProperty(CONFIG_PROPERTY_NAME_PORT2);
 		final int messageBufferSize = MESSAGE_BUFFER_SIZE;
-		final BufferListener listener = new BufferListener() {
+		final ReadListener listener = new ReadListener() {
 			@Override
 			public void read(final ByteBuffer buffer) {
 				RegistryRecord.registerRecordInRegistry(buffer, TCPReader.this.stringRegistry);

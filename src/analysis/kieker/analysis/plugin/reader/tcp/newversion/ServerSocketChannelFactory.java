@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************/
 
-package kieker.analysis.plugin.reader.tcp;
+package kieker.analysis.plugin.reader.tcp.newversion;
 
 import java.io.IOException;
 import java.nio.channels.ServerSocketChannel;

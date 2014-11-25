@@ -27,7 +27,7 @@ import kieker.common.configuration.Configuration;
 import kieker.common.logging.Log;
 import kieker.common.logging.LogFactory;
 import kieker.common.record.IMonitoringRecord;
-import kieker.common.record.misc.RegistryRecord;
+import kieker.common.util.RecordSerializer;
 import kieker.common.util.registry.IRegistry;
 import kieker.monitoring.core.controller.IMonitoringController;
 import kieker.monitoring.writer.AbstractAsyncThread;
@@ -56,7 +56,6 @@ public final class NewTcpWriter extends AbstractAsyncWriter {
 
 	private final String hostname;
 	private final int port1;
-	// private final int port2;
 	private final int bufferSize;
 	private final boolean flush;
 
@@ -105,6 +104,7 @@ class NewTcpWriterThread extends AbstractAsyncThread {
 	private final ByteBuffer byteBuffer;
 	private final IRegistry<String> stringRegistry;
 	private final boolean flush;
+	private final RecordSerializer recordSerializer;
 
 	public NewTcpWriterThread(final IMonitoringController monitoringController, final BlockingQueue<IMonitoringRecord> writeQueue, final String hostname,
 			final int port, final int bufferSize, final boolean flush) throws IOException {
@@ -113,6 +113,7 @@ class NewTcpWriterThread extends AbstractAsyncThread {
 		this.socketChannel = SocketChannel.open(new InetSocketAddress(hostname, port));
 		this.stringRegistry = this.monitoringController.getStringRegistry();
 		this.flush = flush;
+		this.recordSerializer = new RecordSerializer(this.stringRegistry);
 	}
 
 	@Override
@@ -127,19 +128,7 @@ class NewTcpWriterThread extends AbstractAsyncThread {
 			buffer.clear();
 		}
 
-		monitoringRecord.registerStrings(this.stringRegistry);
-
-		final int recordClassId;
-		if (monitoringRecord instanceof RegistryRecord) {
-			recordClassId = NewTcpWriter.REGISTRY_RECORD_CLASS_ID;
-		} else {
-			recordClassId = this.monitoringController.getUniqueIdForString(monitoringRecord.getClass().getName());
-		}
-
-		buffer.putInt(recordClassId);
-		buffer.putLong(monitoringRecord.getLoggingTimestamp());
-		monitoringRecord.writeBytes(buffer, this.stringRegistry);
-		System.out.println("WRITTEN: " + monitoringRecord.getClass().getName());
+		this.recordSerializer.serialize(monitoringRecord, buffer);
 
 		if (this.flush) {
 			buffer.flip();

@@ -14,21 +14,17 @@
  * limitations under the License.
  ***************************************************************************/
 
-package kieker.analysis.plugin.reader.tcp;
+package kieker.analysis.plugin.reader.tcp.newversion;
 
-import java.io.IOException;
-import java.nio.channels.ServerSocketChannel;
+import java.nio.ByteBuffer;
 
 /**
  * @author Christian Wulf
  *
  * @since 1.11
  */
-public class DefaultServerSocketChannelFactory implements ServerSocketChannelFactory {
+public interface ReadListener {
 
-	@Override
-	public ServerSocketChannel openServerSocket() throws IOException {
-		return ServerSocketChannel.open();
-	}
+	void read(ByteBuffer buffer);
 
 }

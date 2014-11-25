@@ -18,8 +18,8 @@ import org.mockito.stubbing.Answer;
 
 import kieker.analysis.AnalysisController;
 import kieker.analysis.plugin.filter.forward.ListCollectionFilter;
-import kieker.analysis.plugin.reader.tcp.ServerSocketChannelFactory;
 import kieker.analysis.plugin.reader.tcp.TCPReader;
+import kieker.analysis.plugin.reader.tcp.newversion.ServerSocketChannelFactory;
 import kieker.common.configuration.Configuration;
 import kieker.common.record.IMonitoringRecord;
 import kieker.common.record.flow.trace.operation.BeforeOperationEvent;

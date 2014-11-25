@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************/
 
-package kieker.test.tools.junit.writeRead.tcp;
+package kieker.test.tools.junit.writeRead.tcp.newversion;
 
 import java.util.concurrent.TimeUnit;
 
@@ -26,7 +26,7 @@ import kieker.analysis.AnalysisController;
 import kieker.analysis.AnalysisControllerThread;
 import kieker.analysis.exception.AnalysisConfigurationException;
 import kieker.analysis.plugin.filter.forward.ListCollectionFilter;
-import kieker.analysis.plugin.reader.tcp.NewTcpReader;
+import kieker.analysis.plugin.reader.tcp.newversion.NewTcpReader;
 import kieker.common.configuration.Configuration;
 import kieker.common.record.IMonitoringRecord;
 import kieker.common.record.controlflow.OperationExecutionRecord;
@@ -46,7 +46,6 @@ import kieker.test.common.junit.AbstractKiekerTest;
 public class NewTcpWriterReaderTest extends AbstractKiekerTest {
 
 	private static final String PORT1 = "10133";
-	private static final String PORT2 = "10134";
 
 	private IMonitoringController monitoringController;
 	private AnalysisController analysisController;
@@ -136,9 +135,6 @@ public class NewTcpWriterReaderTest extends AbstractKiekerTest {
 
 	private void configureMonitoring() {
 		final Configuration monitoringConfig = ConfigurationFactory.createDefaultConfiguration();
-		// monitoringConfig.setProperty(ConfigurationFactory.WRITER_CLASSNAME, TCPWriter.class.getName());
-		// monitoringConfig.setProperty(TCPWriter.CONFIG_PORT1, TCPReaderTest.PORT1);
-		// monitoringConfig.setProperty(TCPWriter.CONFIG_PORT2, TCPReaderTest.PORT2);
 		monitoringConfig.setProperty(ConfigurationFactory.WRITER_CLASSNAME, NewTcpWriter.class.getName());
 		monitoringConfig.setProperty(NewTcpWriter.CONFIG_PORT1, NewTcpWriterReaderTest.PORT1);
 		// kieker.monitoring.writer.tcp.NewTcpWriter.hostname=localhost
@@ -157,15 +153,11 @@ public class NewTcpWriterReaderTest extends AbstractKiekerTest {
 		this.analysisController = new AnalysisController();
 
 		final Configuration readerConfig = new Configuration();
-		// readerConfig.setProperty(TCPReader.CONFIG_PROPERTY_NAME_PORT1, TCPReaderTest.PORT1);
-		// readerConfig.setProperty(TCPReader.CONFIG_PROPERTY_NAME_PORT2, TCPReaderTest.PORT2);
-		// final TCPReader tcpReader = new TCPReader(readerConfig, this.analysisController);
 		readerConfig.setProperty(NewTcpReader.CONFIG_PROPERTY_NAME_PORT1, NewTcpWriterReaderTest.PORT1);
 		final NewTcpReader tcpReader = new NewTcpReader(readerConfig, this.analysisController);
 
 		this.sinkFilter = new ListCollectionFilter<IMonitoringRecord>(new Configuration(), this.analysisController);
 
-		// this.analysisController.connect(tcpReader, TCPReader.OUTPUT_PORT_NAME_RECORDS, this.sinkFilter, ListCollectionFilter.INPUT_PORT_NAME);
 		this.analysisController.connect(tcpReader, NewTcpReader.OUTPUT_PORT_NAME_RECORDS, this.sinkFilter, ListCollectionFilter.INPUT_PORT_NAME);
 	}
 

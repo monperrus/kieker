@@ -24,6 +24,8 @@ import java.nio.channels.ClosedByInterruptException;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
+import kieker.analysis.plugin.reader.tcp.newversion.ReadListener;
+import kieker.analysis.plugin.reader.tcp.newversion.ServerSocketChannelFactory;
 import kieker.common.logging.Log;
 
 /**
@@ -36,14 +38,15 @@ public class TcpServer {
 	private final ServerSocketChannelFactory serverSocketChannelFactory;
 	private final int port;
 	private final int messageBufferSize;
-	private final BufferListener listener;
+	private final ReadListener listener;
 	private final Log log;
 
 	private volatile boolean terminated;
 	private Thread readerThread;
 
-	public TcpServer(final ServerSocketChannelFactory serverSocketChannelFactory, final int port, final int messageBufferSize,
-			final BufferListener listener, final Log log) {
+	public TcpServer(final ServerSocketChannelFactory serverSocketChannelFactory, final int port,
+			final int messageBufferSize,
+			final ReadListener listener, final Log log) {
 		super();
 		this.serverSocketChannelFactory = serverSocketChannelFactory;
 		this.port = port;
@@ -64,23 +67,7 @@ public class TcpServer {
 			}
 			// BEGIN also loop this one?
 			final SocketChannel socketChannel = serverSocketChannel.accept();
-			final ByteBuffer buffer = ByteBuffer.allocateDirect(this.messageBufferSize);
-			while ((socketChannel.read(buffer) != -1) && (!this.terminated)) {
-				buffer.flip();
-				// System.out.println("Reading, remaining:" + buffer.remaining());
-				try {
-					while (buffer.hasRemaining()) {
-						buffer.mark();
-						this.listener.read(buffer);
-					}
-					buffer.clear();
-				} catch (final BufferUnderflowException ex) {
-					buffer.reset();
-					// System.out.println("Underflow, remaining:" + buffer.remaining());
-					buffer.compact();
-				}
-			}
-			// System.out.println("Channel closing...");
+			this.processClientConnection(socketChannel);
 			socketChannel.close();
 			// END also loop this one?
 		} catch (final ClosedByInterruptException ex) {
@@ -101,6 +88,26 @@ public class TcpServer {
 			}
 		}
 		return true;
+	}
+
+	private final void processClientConnection(final SocketChannel socketChannel) throws IOException {
+		final ByteBuffer buffer = ByteBuffer.allocateDirect(this.messageBufferSize);
+		while ((socketChannel.read(buffer) != -1) && (!this.terminated)) {
+			buffer.flip();
+			// System.out.println("Reading, remaining:" + buffer.remaining());
+			try {
+				while (buffer.hasRemaining()) {
+					buffer.mark();
+					this.listener.read(buffer);
+				}
+				buffer.clear();
+			} catch (final BufferUnderflowException ex) {
+				buffer.reset();
+				// System.out.println("Underflow, remaining:" + buffer.remaining());
+				buffer.compact();
+			}
+		}
+		// System.out.println("Channel closing...");
 	}
 
 	public void terminate() {

@@ -14,17 +14,39 @@
  * limitations under the License.
  ***************************************************************************/
 
-package kieker.analysis.plugin.reader.tcp;
+package kieker.test.analysis.junit.plugin.reader.tcp.newversion;
 
+import static org.mockito.Mockito.mock;
+
+import java.io.IOException;
+import java.net.ServerSocket;
 import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
 
 /**
  * @author Christian Wulf
  *
  * @since 1.11
  */
-public interface BufferListener {
+public class MockedServerSocketChannel extends EmptyServerSocketChannelImpl {
 
-	void read(ByteBuffer buffer);
+	final ByteBuffer buffer;
+
+	public MockedServerSocketChannel(final ByteBuffer buffer) {
+		this.buffer = buffer;
+	}
+
+	@Override
+	public ServerSocket socket() {
+		return mock(ServerSocket.class);
+	}
+
+	@Override
+	public SocketChannel accept() throws IOException {
+		// final SocketChannel socketChannel = mock(SocketChannel.class); // does not work due to final method 'close()'
+		return new MockedSocketChannel(this.buffer);
+	}
+
+	// inherit final close()
 
 }

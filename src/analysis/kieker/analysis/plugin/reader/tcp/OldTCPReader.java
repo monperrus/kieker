@@ -29,6 +29,8 @@ import kieker.analysis.plugin.annotation.OutputPort;
 import kieker.analysis.plugin.annotation.Plugin;
 import kieker.analysis.plugin.annotation.Property;
 import kieker.analysis.plugin.reader.AbstractReaderPlugin;
+import kieker.analysis.plugin.reader.tcp.newversion.DefaultServerSocketChannelFactory;
+import kieker.analysis.plugin.reader.tcp.newversion.ServerSocketChannelFactory;
 import kieker.common.configuration.Configuration;
 import kieker.common.exception.RecordInstantiationException;
 import kieker.common.logging.Log;
