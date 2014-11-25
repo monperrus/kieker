@@ -2,9 +2,12 @@ package kieker.test.analysis.junit.plugin.reader.tcp.newversion;
 
 import static kieker.test.analysis.util.AssertHelper.assertInstanceOf;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
+import java.net.ServerSocket;
 import java.nio.ByteBuffer;
 import java.nio.channels.ServerSocketChannel;
 import java.util.List;
@@ -28,7 +31,7 @@ import kieker.test.common.junit.AbstractKiekerTest;
 
 public class NewTcpReaderTest extends AbstractKiekerTest implements IMonitoringRecordReceiver {
 
-	private final ByteBuffer buffer = ByteBuffer.allocateDirect(1024);
+	final ByteBuffer buffer = ByteBuffer.allocateDirect(1024);
 	private RecordSerializer recordSerializer;
 
 	@Before
@@ -61,10 +64,16 @@ public class NewTcpReaderTest extends AbstractKiekerTest implements IMonitoringR
 		// build analysis -----------------------------------------------------------------
 		final AnalysisController analysisController = new AnalysisController();
 
-		final ServerSocketChannelFactory mockedServerSocketChannelFactory = mock(ServerSocketChannelFactory.class);
 		// final ServerSocketChannel mockedServerSocketChannel = mock(ServerSocketChannel.class); // does not work due to final method 'close()'
-		final ServerSocketChannel mockedServerSocketChannel = new MockedServerSocketChannel(this.buffer);
-		when(mockedServerSocketChannelFactory.openServerSocket()).thenReturn(mockedServerSocketChannel);
+		final ServerSocketChannel mockedServerSocketChannel = spy(new EmptyServerSocketChannelImpl());
+		doReturn(mock(ServerSocket.class)).
+				when(mockedServerSocketChannel).socket();
+		doReturn(new MockedSocketChannel(NewTcpReaderTest.this.buffer)).
+				when(mockedServerSocketChannel).accept();
+
+		final ServerSocketChannelFactory mockedServerSocketChannelFactory = mock(ServerSocketChannelFactory.class);
+		when(mockedServerSocketChannelFactory.openServerSocket()).
+				thenReturn(mockedServerSocketChannel);
 
 		final Configuration configuration0 = new Configuration();
 		final NewTcpReader tcpReader = new NewTcpReader(configuration0, analysisController, mockedServerSocketChannelFactory);
@@ -90,5 +99,4 @@ public class NewTcpReaderTest extends AbstractKiekerTest implements IMonitoringR
 
 		assertEquals(1, records.size());
 	}
-
 }
