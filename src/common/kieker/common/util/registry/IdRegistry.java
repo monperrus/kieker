@@ -16,8 +16,8 @@
 
 package kieker.common.util.registry;
 
-import com.carrotsearch.hppc.ObjectLongMap;
-import com.carrotsearch.hppc.ObjectLongOpenHashMap;
+import com.carrotsearch.hppc.ObjectIntMap;
+import com.carrotsearch.hppc.ObjectIntOpenHashMap;
 
 /**
  * @author Christian Wulf
@@ -26,18 +26,18 @@ import com.carrotsearch.hppc.ObjectLongOpenHashMap;
  */
 public final class IdRegistry<T> implements IIdRegistry<T> {
 
-	private final ObjectLongMap<T> identifiers = new ObjectLongOpenHashMap<T>();
-	private long nextFreeIdentifier = 0;
+	private final ObjectIntMap<T> identifiers = new ObjectIntOpenHashMap<T>();
+	private int nextFreeIdentifier = 0;
 
 	@Override
-	public long get(final T element) {
+	public int get(final T element) {
 		return this.identifiers.get(element);
 	}
 
 	@Override
 	public void putIfAbsent(final T element) {
 		if (!this.identifiers.containsKey(element)) {
-			final long newIdentifier = this.nextFreeIdentifier++;
+			final int newIdentifier = this.nextFreeIdentifier++;
 			this.identifiers.put(element, newIdentifier);
 		}
 	}

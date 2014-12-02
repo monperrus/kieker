@@ -23,7 +23,7 @@ package kieker.common.util.registry;
  */
 public interface IIdRegistry<T> {
 
-	long get(T element);
+	int get(T element);
 
 	void putIfAbsent(T element);
 }
