@@ -117,5 +117,6 @@
 	<classpathentry kind="lib" path="examples/JavaEEServletContainerExample/jetty/webapps/jpetstore/WEB-INF/lib/aopalliance-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/jctools-core-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/testing/mockito-all-1.9.5.jar"/>
+	<classpathentry kind="lib" path="lib/hppc-0.6.0.jar"/>
 	<classpathentry kind="output" path="build-eclipse"/>
 </classpath>
