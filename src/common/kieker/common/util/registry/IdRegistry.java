@@ -16,8 +16,8 @@
 
 package kieker.common.util.registry;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.carrotsearch.hppc.ObjectLongMap;
+import com.carrotsearch.hppc.ObjectLongOpenHashMap;
 
 /**
  * @author Christian Wulf
@@ -26,7 +26,7 @@ import java.util.Map;
  */
 public final class IdRegistry<T> implements IIdRegistry<T> {
 
-	private final Map<T, Long> identifiers = new HashMap<T, Long>();
+	private final ObjectLongMap<T> identifiers = new ObjectLongOpenHashMap<T>();
 	private long nextFreeIdentifier = 0;
 
 	@Override
