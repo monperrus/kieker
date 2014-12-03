@@ -23,13 +23,13 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.BlockingQueue;
 
 import kieker.common.record.IMonitoringRecord;
-import kieker.common.util.registry.IRegistry;
+import kieker.common.util.registry.newversion.IRegistry;
 import kieker.monitoring.core.controller.IMonitoringController;
 import kieker.monitoring.writer.filesystem.map.StringMappingFileWriter;
 
 /**
  * @author Jan Waller
- * 
+ *
  * @since 1.7
  */
 public class BinaryZipWriterThread extends AbstractZipWriterThread {
@@ -38,7 +38,7 @@ public class BinaryZipWriterThread extends AbstractZipWriterThread {
 
 	/**
 	 * Create a new BinaryZipWriterThread.
-	 * 
+	 *
 	 * @param monitoringController
 	 *            the monitoring controller accessed by this thread
 	 * @param writeQueue
@@ -53,13 +53,13 @@ public class BinaryZipWriterThread extends AbstractZipWriterThread {
 	 *            size of the output buffer
 	 * @param level
 	 *            compression level
-	 * 
+	 *
 	 * @throws IOException
 	 *             when file operation fails
 	 */
 	public BinaryZipWriterThread(final IMonitoringController monitoringController, final BlockingQueue<IMonitoringRecord> writeQueue,
 			final StringMappingFileWriter mappingFileWriter, final String path, final int maxEntriesInFile, final int bufferSize, final int level)
-			throws IOException {
+					throws IOException {
 		super(monitoringController, writeQueue, mappingFileWriter, path, maxEntriesInFile, level);
 		super.fileExtension = ".bin";
 		this.out = new DataOutputStream(new BufferedOutputStream(super.zipOutputStream, bufferSize));

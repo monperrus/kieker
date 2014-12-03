@@ -25,7 +25,7 @@ import kieker.common.logging.LogFactory;
 import kieker.common.record.IMonitoringRecord;
 import kieker.common.record.misc.KiekerMetadataRecord;
 import kieker.common.util.Version;
-import kieker.common.util.registry.IRegistry;
+import kieker.common.util.registry.newversion.IRegistry;
 import kieker.monitoring.core.configuration.ConfigurationFactory;
 import kieker.monitoring.core.sampler.ISampler;
 import kieker.monitoring.core.sampler.ScheduledSamplerJob;
@@ -33,7 +33,7 @@ import kieker.monitoring.timer.ITimeSource;
 
 /**
  * @author Jan Waller
- * 
+ *
  * @since 1.3
  */
 public final class MonitoringController extends AbstractController implements IMonitoringController {
@@ -62,10 +62,10 @@ public final class MonitoringController extends AbstractController implements IM
 	// FACTORY
 	/**
 	 * This is a factory method creating a new monitoring controller instance using the given configuration.
-	 * 
+	 *
 	 * @param configuration
 	 *            The configuration for the new controller.
-	 * 
+	 *
 	 * @return A new controller.
 	 */
 	public static final IMonitoringController createInstance(final Configuration configuration) {
@@ -132,7 +132,7 @@ public final class MonitoringController extends AbstractController implements IM
 
 	/**
 	 * Return the version name of this controller instance.
-	 * 
+	 *
 	 * @return the version name
 	 */
 	public static final String getVersion() {
@@ -175,7 +175,7 @@ public final class MonitoringController extends AbstractController implements IM
 
 	/**
 	 * This method sends the meta data (like the controller and host name, the experiment ID, etc.) as a record.
-	 * 
+	 *
 	 * @return true on success; false in case of an error.
 	 */
 	@Override
@@ -290,6 +290,10 @@ public final class MonitoringController extends AbstractController implements IM
 		return this.registryController.getUniqueIdForString(string);
 	}
 
+	/**
+	 * @deprecated since 1.11 because it is not used
+	 */
+	@Deprecated
 	@Override
 	public String getStringForUniqueId(final int id) {
 		return this.registryController.getStringForUniqueId(id);

@@ -19,12 +19,12 @@ package kieker.monitoring.core.controller;
 import kieker.common.configuration.Configuration;
 import kieker.common.logging.Log;
 import kieker.common.logging.LogFactory;
-import kieker.common.util.registry.IRegistry;
-import kieker.common.util.registry.Registry;
+import kieker.common.util.registry.newversion.IRegistry;
+import kieker.common.util.registry.newversion.Registry;
 
 /**
  * @author Jan Waller
- * 
+ *
  * @since 1.5
  */
 public final class RegistryController extends AbstractController implements IRegistryController {
@@ -34,7 +34,7 @@ public final class RegistryController extends AbstractController implements IReg
 
 	/**
 	 * Creates a new instance of this class using the given configuration to initialize the class.
-	 * 
+	 *
 	 * @param configuration
 	 *            The configuration used to initialize this controller.
 	 */
@@ -44,8 +44,7 @@ public final class RegistryController extends AbstractController implements IReg
 	}
 
 	@Override
-	protected final void init() {
-		this.stringRegistry.setRecordReceiver(this.monitoringController);
+	protected void init() { // NOPMD (not necessary)
 	}
 
 	@Override
@@ -74,10 +73,13 @@ public final class RegistryController extends AbstractController implements IReg
 
 	/**
 	 * {@inheritDoc}
+	 *
+	 * @deprecated since 1.11
 	 */
+	@Deprecated
 	@Override
 	public String getStringForUniqueId(final int id) {
-		return this.stringRegistry.get(id);
+		return "deprecated";
 	}
 
 	/**
@@ -87,4 +89,5 @@ public final class RegistryController extends AbstractController implements IReg
 	public IRegistry<String> getStringRegistry() {
 		return this.stringRegistry;
 	}
+
 }

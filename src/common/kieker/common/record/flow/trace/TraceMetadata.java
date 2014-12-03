@@ -23,11 +23,12 @@ import java.nio.ByteBuffer;
 import kieker.common.record.AbstractMonitoringRecord;
 import kieker.common.record.IMonitoringRecord;
 import kieker.common.record.flow.IFlowRecord;
-import kieker.common.util.registry.IRegistry;
+import kieker.common.util.registry.ILookup;
+import kieker.common.util.registry.newversion.IRegistry;
 
 /**
  * @author Jan Waller
- * 
+ *
  * @since 1.5
  */
 public class TraceMetadata extends AbstractMonitoringRecord implements IMonitoringRecord.Factory, IMonitoringRecord.BinaryFactory, IFlowRecord {
@@ -62,7 +63,7 @@ public class TraceMetadata extends AbstractMonitoringRecord implements IMonitori
 
 	/**
 	 * Creates a new instance of this class using the given parameters.
-	 * 
+	 *
 	 * @param traceId
 	 *            The trace ID.
 	 * @param threadId
@@ -87,7 +88,7 @@ public class TraceMetadata extends AbstractMonitoringRecord implements IMonitori
 
 	/**
 	 * Creates a new instance of this class using the given parameter.
-	 * 
+	 *
 	 * @param values
 	 *            The array containing the values for the fields of this class. This should normally be the array resulting in a call to {@link #toArray()}.
 	 */
@@ -103,14 +104,14 @@ public class TraceMetadata extends AbstractMonitoringRecord implements IMonitori
 
 	/**
 	 * This constructor converts the given array into a record.
-	 * 
+	 *
 	 * @param buffer
 	 *            The bytes for the record.
-	 * 
+	 *
 	 * @throws BufferUnderflowException
 	 *             if buffer not sufficient
 	 */
-	public TraceMetadata(final ByteBuffer buffer, final IRegistry<String> stringRegistry) throws BufferUnderflowException {
+	public TraceMetadata(final ByteBuffer buffer, final ILookup<String> stringRegistry) throws BufferUnderflowException {
 		this.traceId = buffer.getLong();
 		this.threadId = buffer.getLong();
 		this.sessionId = stringRegistry.get(buffer.getInt());
@@ -142,7 +143,7 @@ public class TraceMetadata extends AbstractMonitoringRecord implements IMonitori
 
 	/**
 	 * {@inheritDoc}
-	 * 
+	 *
 	 * @deprecated This record uses the {@link kieker.common.record.IMonitoringRecord.Factory} mechanism. Hence, this method is not implemented.
 	 */
 	@Override
@@ -153,12 +154,12 @@ public class TraceMetadata extends AbstractMonitoringRecord implements IMonitori
 
 	/**
 	 * {@inheritDoc}
-	 * 
+	 *
 	 * @deprecated This record uses the {@link kieker.common.record.IMonitoringRecord.BinaryFactory} mechanism. Hence, this method is not implemented.
 	 */
 	@Override
 	@Deprecated
-	public final void initFromBytes(final ByteBuffer buffer, final IRegistry<String> stringRegistry) throws BufferUnderflowException {
+	public final void initFromBytes(final ByteBuffer buffer, final ILookup<String> stringRegistry) throws BufferUnderflowException {
 		throw new UnsupportedOperationException();
 	}
 

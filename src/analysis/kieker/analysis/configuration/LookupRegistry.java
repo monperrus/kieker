@@ -14,41 +14,48 @@
  * limitations under the License.
  ***************************************************************************/
 
-package kieker.common.util.registry.newversion;
+package kieker.analysis.configuration;
 
-import java.util.HashMap;
-import java.util.Map;
+import kieker.common.util.registry.newversion.ILookup;
+import kieker.common.util.registry.newversion.IRegistry;
+import kieker.common.util.registry.newversion.Lookup;
+import kieker.common.util.registry.newversion.Registry;
 
 /**
  * @author Christian Wulf
  *
  * @since 1.11
  */
-public final class Registry<T> implements IRegistry<T> {
+class LookupRegistry<T> implements IRegistry<T>, ILookup<T> {
 
-	// TODO use a HPC implementation with primitive int values
-	// I recommend: http://labs.carrotsearch.com/hppc.html
-	private final Map<T, Integer> registeredEntries = new HashMap<T, Integer>();
-	private int nextIdentifier;
+	private final Registry<T> registry = new Registry<T>();
+	private final Lookup<T> lookup = new Lookup<T>();
+
+	@Override
+	public void add(final int uniqueId, final T element) {
+		throw new IllegalStateException("Operation not supported by this implementation");
+	}
+
+	@Override
+	public T get(final int uniqueId) {
+		return this.lookup.get(uniqueId);
+	}
 
 	@Override
 	public int addIfAbsent(final T element) {
-		Integer uniqueId = this.registeredEntries.get(element);
-		if (null == uniqueId) {
-			uniqueId = this.nextIdentifier++;
-			this.registeredEntries.put(element, uniqueId);
-		}
+		final int uniqueId = this.registry.addIfAbsent(element);
+		this.lookup.add(uniqueId, element);
 		return uniqueId;
 	}
 
 	@Override
-	public final int get(final T element) {
-		return this.registeredEntries.get(element);
+	public int get(final T element) {
+		return this.registry.get(element);
 	}
 
 	@Override
 	public int getSize() {
-		return this.registeredEntries.size();
+		return this.registry.getSize();
 	}
 
 }

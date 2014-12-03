@@ -27,15 +27,15 @@ import kieker.common.logging.Log;
 import kieker.common.logging.LogFactory;
 import kieker.common.record.IMonitoringRecord;
 import kieker.common.record.misc.RegistryRecord;
-import kieker.common.util.registry.IRegistry;
+import kieker.common.util.registry.newversion.Registry;
 import kieker.monitoring.core.controller.IMonitoringController;
 import kieker.monitoring.writer.AbstractAsyncThread;
 import kieker.monitoring.writer.AbstractAsyncWriter;
 
 /**
- * 
+ *
  * @author Jan Waller
- * 
+ *
  * @since 1.8
  */
 public final class TCPWriter extends AbstractAsyncWriter {
@@ -70,9 +70,9 @@ public final class TCPWriter extends AbstractAsyncWriter {
 }
 
 /**
- * 
+ *
  * @author Jan Waller
- * 
+ *
  * @since 1.8
  */
 final class TCPWriterThread extends AbstractAsyncThread {
@@ -80,7 +80,7 @@ final class TCPWriterThread extends AbstractAsyncThread {
 
 	private final SocketChannel socketChannel;
 	private final ByteBuffer byteBuffer;
-	private final IRegistry<String> stringRegistry;
+	private final kieker.common.util.registry.newversion.IRegistry<String> stringRegistry;
 	private final boolean flush;
 
 	public TCPWriterThread(final IMonitoringController monitoringController, final BlockingQueue<IMonitoringRecord> writeQueue, final String hostname,
@@ -88,7 +88,7 @@ final class TCPWriterThread extends AbstractAsyncThread {
 		super(monitoringController, writeQueue);
 		this.byteBuffer = ByteBuffer.allocateDirect(bufferSize);
 		this.socketChannel = SocketChannel.open(new InetSocketAddress(hostname, port));
-		this.stringRegistry = this.monitoringController.getStringRegistry();
+		this.stringRegistry = new Registry<String>();
 		this.flush = flush;
 	}
 

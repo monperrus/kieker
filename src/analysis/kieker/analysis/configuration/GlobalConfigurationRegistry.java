@@ -19,20 +19,19 @@ package kieker.analysis.configuration;
 import kieker.analysis.exception.PluginNotFoundException;
 import kieker.analysis.plugin.AbstractUpdateableFilterPlugin;
 import kieker.common.configuration.Configuration;
-import kieker.common.util.registry.Registry;
 
 /**
  * This is a global accesible singleton class to update the configuration of registered filters during runtime.
- * 
+ *
  * @author Markus Fischer, Nils Christian Ehmke
- * 
+ *
  * @since 1.10
  */
 public final class GlobalConfigurationRegistry {
 
 	private static final GlobalConfigurationRegistry INSTANCE = new GlobalConfigurationRegistry();
 
-	private final Registry<AbstractUpdateableFilterPlugin> updateableFilters = new Registry<AbstractUpdateableFilterPlugin>();
+	private final LookupRegistry<AbstractUpdateableFilterPlugin> updateableFilters = new LookupRegistry<AbstractUpdateableFilterPlugin>();
 
 	private GlobalConfigurationRegistry() {}
 
@@ -42,24 +41,24 @@ public final class GlobalConfigurationRegistry {
 
 	/**
 	 * Registers an AbstractUpdateableFilterPlugin to the registry.
-	 * 
+	 *
 	 * @param plugin
 	 *            plugin to be registered
 	 */
 	public int registerUpdateableFilterPlugin(final AbstractUpdateableFilterPlugin plugin) {
-		return this.updateableFilters.get(plugin);
+		return this.updateableFilters.addIfAbsent(plugin);
 	}
 
 	/**
 	 * Updates the configuration of a FilterPlugin identified by its id.
-	 * 
+	 *
 	 * @param id
 	 *            id of the plugin to be updated
 	 * @param configuration
 	 *            Configuration containing the new values
 	 * @param update
 	 *            If false, set all properties, else overwrite only properties that are marked as updateable
-	 * 
+	 *
 	 * @throws PluginNotFoundException
 	 *             plugin was not found
 	 */

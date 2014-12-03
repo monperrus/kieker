@@ -24,7 +24,7 @@ import java.nio.ByteBuffer;
 import kieker.common.record.AbstractMonitoringRecord;
 import kieker.common.record.IMonitoringRecord;
 import kieker.common.util.registry.ILookup;
-import kieker.common.util.registry.IRegistry;
+import kieker.common.util.registry.newversion.IRegistry;
 
 /**
  * Record used to associate Objects (typically Strings) with unique ids.
@@ -149,7 +149,7 @@ public final class RegistryRecord extends AbstractMonitoringRecord implements IM
 	 */
 	@Override
 	@Deprecated
-	public final void initFromBytes(final ByteBuffer buffer, final IRegistry<String> stringRegistry) throws BufferUnderflowException {
+	public final void initFromBytes(final ByteBuffer buffer, final ILookup<String> stringRegistry) throws BufferUnderflowException {
 		throw new UnsupportedOperationException();
 	}
 

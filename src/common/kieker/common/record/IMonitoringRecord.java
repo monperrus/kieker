@@ -21,7 +21,8 @@ import java.nio.BufferOverflowException;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 
-import kieker.common.util.registry.IRegistry;
+import kieker.common.util.registry.ILookup;
+import kieker.common.util.registry.newversion.IRegistry;
 
 /**
  * All Kieker monitoring records have to implement this minimal interface.
@@ -117,7 +118,7 @@ public interface IMonitoringRecord extends Serializable, Comparable<IMonitoringR
 	 *
 	 * @since 1.8
 	 */
-	public void initFromBytes(ByteBuffer buffer, IRegistry<String> stringRegistry) throws BufferUnderflowException;
+	public void initFromBytes(ByteBuffer buffer, ILookup<String> stringRegistry) throws BufferUnderflowException;
 
 	/**
 	 * This method should initialize the record based on the given values. The array should be one of those resulting from a call to {@link #toArray()}.

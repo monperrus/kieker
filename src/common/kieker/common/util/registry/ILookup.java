@@ -18,27 +18,33 @@ package kieker.common.util.registry;
 
 /**
  * A generic interface to query registered unique IDs of objects.
- * 
+ *
  * @param <E>
  *            the type of the objects
- * 
+ *
  * @author Jan Waller
- * 
+ *
  * @since 1.8
  */
-public interface ILookup<E> extends IRegistry<E> {
+public interface ILookup<E> {
 
 	/**
 	 * Registers the object with the unique id.
-	 * 
+	 *
 	 * @param value
 	 *            the object
 	 * @param id
 	 *            the unique id
 	 * @return
 	 *         false on duplicate id
-	 * 
+	 *
 	 * @since 1.8
 	 */
 	public boolean set(final E value, final int id);
+
+	int get(E value);
+
+	E get(int i);
+
+	int getSize();
 }

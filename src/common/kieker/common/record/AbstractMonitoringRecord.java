@@ -26,7 +26,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import kieker.common.exception.MonitoringRecordException;
-import kieker.common.util.registry.IRegistry;
+import kieker.common.util.registry.ILookup;
+import kieker.common.util.registry.newversion.IRegistry;
 
 /**
  * @author Andre van Hoorn, Jan Waller, Nils Christian Ehmke
@@ -416,7 +417,7 @@ public abstract class AbstractMonitoringRecord implements IMonitoringRecord {
 	 * @throws BufferUnderflowException
 	 *             If the byte buffer is to small to hold all necessary information for a record.
 	 */
-	public static final IMonitoringRecord createFromByteBuffer(final int clazzid, final ByteBuffer buffer, final IRegistry<String> stringRegistry)
+	public static final IMonitoringRecord createFromByteBuffer(final int clazzid, final ByteBuffer buffer, final ILookup<String> stringRegistry)
 			throws MonitoringRecordException, BufferUnderflowException {
 		try {
 			Constructor<? extends IMonitoringRecord> constructor = CACHED_KIEKERRECORD_CONSTRUCTORS_BINARY.get(clazzid);
@@ -499,7 +500,7 @@ public abstract class AbstractMonitoringRecord implements IMonitoringRecord {
 		}
 	}
 
-	public static final IMonitoringRecord createFromByteBuffer(final String recordClassName, final ByteBuffer buffer, final IRegistry<String> stringRegistry)
+	public static final IMonitoringRecord createFromByteBuffer(final String recordClassName, final ByteBuffer buffer, final ILookup<String> stringRegistry)
 			throws BufferUnderflowException, MonitoringRecordException {
 		return AbstractMonitoringRecord.createFromByteBufferChw(recordClassName, buffer, stringRegistry);
 	}
@@ -512,7 +513,7 @@ public abstract class AbstractMonitoringRecord implements IMonitoringRecord {
 	/**
 	 * Copy of {@link #createFromByteBuffer}. However, the constructor cache's key is a string, not an integer
 	 */
-	private static final IMonitoringRecord createFromByteBufferChw(final String recordClassName, final ByteBuffer buffer, final IRegistry<String> stringRegistry)
+	private static final IMonitoringRecord createFromByteBufferChw(final String recordClassName, final ByteBuffer buffer, final ILookup<String> stringRegistry)
 			throws MonitoringRecordException, BufferUnderflowException {
 		try {
 			Constructor<? extends IMonitoringRecord> constructor = CACHED_KIEKERRECORD_CONSTRUCTORS_BINARY_CHW.get(recordClassName);

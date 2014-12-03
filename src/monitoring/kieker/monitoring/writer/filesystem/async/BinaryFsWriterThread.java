@@ -26,13 +26,13 @@ import kieker.common.logging.Log;
 import kieker.common.logging.LogFactory;
 import kieker.common.record.IMonitoringRecord;
 import kieker.common.util.filesystem.BinaryCompressionMethod;
-import kieker.common.util.registry.IRegistry;
+import kieker.common.util.registry.newversion.IRegistry;
 import kieker.monitoring.core.controller.IMonitoringController;
 import kieker.monitoring.writer.filesystem.map.MappingFileWriter;
 
 /**
  * @author Jan Waller
- * 
+ *
  * @since 1.5
  */
 public class BinaryFsWriterThread extends AbstractFsWriterThread {
@@ -46,7 +46,7 @@ public class BinaryFsWriterThread extends AbstractFsWriterThread {
 
 	/**
 	 * Create a new BinaryFsWriterThread.
-	 * 
+	 *
 	 * @param monitoringController
 	 *            the monitoring controller accessed by this thread
 	 * @param writeQueue
