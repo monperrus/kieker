@@ -1,19 +1,14 @@
 package kieker.test.analysis.junit.plugin.reader.tcp.newversion;
 
-import static kieker.test.analysis.util.AssertHelper.assertInstanceOf;
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
-
 import java.net.ServerSocket;
 import java.nio.ByteBuffer;
 import java.nio.channels.ServerSocketChannel;
 import java.util.List;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import kieker.analysis.AnalysisController;
 import kieker.analysis.plugin.filter.forward.ListCollectionFilter;
@@ -23,10 +18,11 @@ import kieker.common.configuration.Configuration;
 import kieker.common.record.IMonitoringRecord;
 import kieker.common.record.flow.trace.operation.BeforeOperationEvent;
 import kieker.common.util.RecordSerializer;
+import kieker.common.util.registry.ILookup;
 import kieker.common.util.registry.IMonitoringRecordReceiver;
-import kieker.common.util.registry.IRegistry;
-import kieker.common.util.registry.Registry;
+import kieker.common.util.registry.Lookup;
 
+import kieker.test.analysis.util.AssertHelper;
 import kieker.test.common.junit.AbstractKiekerTest;
 
 public class NewTcpReaderTest extends AbstractKiekerTest implements IMonitoringRecordReceiver {
@@ -36,7 +32,7 @@ public class NewTcpReaderTest extends AbstractKiekerTest implements IMonitoringR
 
 	@Before
 	public void before() {
-		final IRegistry<String> stringRegistry = new Registry<String>();
+		final ILookup<String> stringRegistry = new Lookup<String>();
 		stringRegistry.setRecordReceiver(this);
 
 		this.recordSerializer = new RecordSerializer(stringRegistry);
@@ -65,15 +61,15 @@ public class NewTcpReaderTest extends AbstractKiekerTest implements IMonitoringR
 		final AnalysisController analysisController = new AnalysisController();
 
 		// final ServerSocketChannel mockedServerSocketChannel = mock(ServerSocketChannel.class); // does not work due to final method 'close()'
-		final ServerSocketChannel mockedServerSocketChannel = spy(new EmptyServerSocketChannelImpl());
-		doReturn(mock(ServerSocket.class)).
-				when(mockedServerSocketChannel).socket();
-		doReturn(new MockedSocketChannel(NewTcpReaderTest.this.buffer)).
-				when(mockedServerSocketChannel).accept();
+		final ServerSocketChannel mockedServerSocketChannel = Mockito.spy(new EmptyServerSocketChannelImpl());
+		Mockito.doReturn(Mockito.mock(ServerSocket.class)).
+		when(mockedServerSocketChannel).socket();
+		Mockito.doReturn(new MockedSocketChannel(NewTcpReaderTest.this.buffer)).
+		when(mockedServerSocketChannel).accept();
 
-		final ServerSocketChannelFactory mockedServerSocketChannelFactory = mock(ServerSocketChannelFactory.class);
-		when(mockedServerSocketChannelFactory.openServerSocket()).
-				thenReturn(mockedServerSocketChannel);
+		final ServerSocketChannelFactory mockedServerSocketChannelFactory = Mockito.mock(ServerSocketChannelFactory.class);
+		Mockito.when(mockedServerSocketChannelFactory.openServerSocket()).
+		thenReturn(mockedServerSocketChannel);
 
 		final Configuration configuration0 = new Configuration();
 		final NewTcpReader tcpReader = new NewTcpReader(configuration0, analysisController, mockedServerSocketChannelFactory);
@@ -90,13 +86,13 @@ public class NewTcpReaderTest extends AbstractKiekerTest implements IMonitoringR
 		// assert -------------------------------------------------------------------------
 		final List<IMonitoringRecord> records = collectionFilter.getList();
 
-		final BeforeOperationEvent record = assertInstanceOf(BeforeOperationEvent.class, records.get(0));
-		assertEquals(timestamp, record.getTimestamp());
-		assertEquals(traceId, record.getTraceId());
-		assertEquals(orderIndex, record.getOrderIndex());
-		assertEquals(operationSignature, record.getOperationSignature());
-		assertEquals(classSignature, record.getClassSignature());
+		final BeforeOperationEvent record = AssertHelper.assertInstanceOf(BeforeOperationEvent.class, records.get(0));
+		Assert.assertEquals(timestamp, record.getTimestamp());
+		Assert.assertEquals(traceId, record.getTraceId());
+		Assert.assertEquals(orderIndex, record.getOrderIndex());
+		Assert.assertEquals(operationSignature, record.getOperationSignature());
+		Assert.assertEquals(classSignature, record.getClassSignature());
 
-		assertEquals(1, records.size());
+		Assert.assertEquals(1, records.size());
 	}
 }

@@ -20,7 +20,7 @@ import java.nio.ByteBuffer;
 
 import kieker.common.record.IMonitoringRecord;
 import kieker.common.record.misc.RegistryRecord;
-import kieker.common.util.registry.IRegistry;
+import kieker.common.util.registry.ILookup;
 
 /**
  * @author Christian Wulf
@@ -29,9 +29,9 @@ import kieker.common.util.registry.IRegistry;
  */
 public final class RecordSerializer {
 
-	private final IRegistry<String> stringRegistry;
+	private final ILookup<String> stringRegistry;
 
-	public RecordSerializer(final IRegistry<String> stringRegistry) {
+	public RecordSerializer(final ILookup<String> stringRegistry) {
 		super();
 		this.stringRegistry = stringRegistry;
 	}

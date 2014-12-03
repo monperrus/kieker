@@ -26,6 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import kieker.common.exception.MonitoringRecordException;
+import kieker.common.util.registry.ILookup;
 import kieker.common.util.registry.IRegistry;
 
 /**
@@ -513,7 +514,7 @@ public abstract class AbstractMonitoringRecord implements IMonitoringRecord {
 	private final ByteBuffer buffer = ByteBuffer.allocateDirect(1024);
 
 	@Override
-	public void registerStrings(final IRegistry<String> stringRegistry) {
+	public void registerStrings(final ILookup<String> stringRegistry) {
 		// TODO remove empty default implementation
 		this.buffer.clear();
 		this.writeBytes(this.buffer, stringRegistry);
