@@ -37,20 +37,23 @@ import kieker.common.util.registry.ILookup;
 import kieker.common.util.registry.Lookup;
 
 /**
+ * Provides the same functionality as the {@link OldTCPReader} does, but in a more modularized way.
+ * It uses an instance of the {@link TcpServer} for reading monitoring records as well as for reading string records.
+ *
  * @author Christian Wulf
  *
  * @since 1.11
  */
 @Plugin(description = "A reader which reads records from a TCP port",
-		outputPorts = {
-			@OutputPort(name = TCPReader.OUTPUT_PORT_NAME_RECORDS, eventTypes = { IMonitoringRecord.class }, description = "Output Port of the TCPReader")
-		},
-		configuration = {
-			@Property(name = TCPReader.CONFIG_PROPERTY_NAME_PORT1, defaultValue = "10133",
-					description = "The first port of the server used for the TCP connection."),
-			@Property(name = TCPReader.CONFIG_PROPERTY_NAME_PORT2, defaultValue = "10134",
-					description = "The second port of the server used for the TCP connection.")
-		})
+outputPorts = {
+		@OutputPort(name = TCPReader.OUTPUT_PORT_NAME_RECORDS, eventTypes = { IMonitoringRecord.class }, description = "Output Port of the TCPReader")
+},
+configuration = {
+		@Property(name = TCPReader.CONFIG_PROPERTY_NAME_PORT1, defaultValue = "10133",
+				description = "The first port of the server used for the TCP connection."),
+				@Property(name = TCPReader.CONFIG_PROPERTY_NAME_PORT2, defaultValue = "10134",
+				description = "The second port of the server used for the TCP connection.")
+})
 public class TCPReader extends AbstractReaderPlugin {
 
 	/** The name of the output port delivering the received records. */
