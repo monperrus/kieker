@@ -17,12 +17,12 @@
 package kieker.common.util.registry;
 
 /**
- * 
+ *
  * @param <E>
  *            the type of the objects
- * 
+ *
  * @author Jan Waller
- * 
+ *
  * @since 1.8
  */
 public final class Lookup<E> implements ILookup<E> {
@@ -52,13 +52,13 @@ public final class Lookup<E> implements ILookup<E> {
 
 	/**
 	 * Get a record from the underlying object array.
-	 * 
+	 *
 	 * @param i
 	 *            the index for the array
-	 * 
+	 *
 	 * @return the object in the array or null if the array bounds are exceeded
 	 */
-	public E getNonBlocking(final int i) {
+	private E getNonBlocking(final int i) {
 		final E[] arr = this.array; // work on this "copy" to prevent concurrent modification
 		if (i < arr.length) {
 			return arr[i];
@@ -66,14 +66,14 @@ public final class Lookup<E> implements ILookup<E> {
 		return null;
 	}
 
-	@Override
-	public E[] getAll() {
-		final E[] arr = this.array; // work on this "copy" to prevent concurrent modification
-		@SuppressWarnings("unchecked")
-		final E[] result = (E[]) new Object[arr.length];
-		System.arraycopy(arr, 0, result, 0, arr.length);
-		return result;
-	}
+	// @Override
+	// public E[] getAll() {
+	// final E[] arr = this.array; // work on this "copy" to prevent concurrent modification
+	// @SuppressWarnings("unchecked")
+	// final E[] result = (E[]) new Object[arr.length];
+	// System.arraycopy(arr, 0, result, 0, arr.length);
+	// return result;
+	// }
 
 	@Override
 	public int getSize() {
@@ -120,7 +120,7 @@ public final class Lookup<E> implements ILookup<E> {
 
 	/**
 	 * @deprecated This method is not supported by this implementation.
-	 * 
+	 *
 	 * @param recordReceiver
 	 *            has no special property.
 	 */
