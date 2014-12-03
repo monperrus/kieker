@@ -24,7 +24,8 @@ import kieker.analysis.plugin.annotation.OutputPort;
 import kieker.analysis.plugin.annotation.Plugin;
 import kieker.analysis.plugin.annotation.Property;
 import kieker.analysis.plugin.reader.AbstractReaderPlugin;
-import kieker.analysis.plugin.reader.tcp.TcpServer;
+import kieker.analysis.plugin.reader.tcp.generic.ReadListener;
+import kieker.analysis.plugin.reader.tcp.generic.TcpServer;
 import kieker.common.configuration.Configuration;
 import kieker.common.exception.RecordInstantiationException;
 import kieker.common.record.IMonitoringRecord;
@@ -41,15 +42,13 @@ import kieker.monitoring.writer.tcp.NewTcpWriter;
  * @since 1.11
  */
 @Plugin(description = "A reader which reads records from a TCP port",
-		outputPorts = {
-			@OutputPort(name = NewTcpReader.OUTPUT_PORT_NAME_RECORDS, eventTypes = { IMonitoringRecord.class }, description = "Output Port of the TCPReader")
-		},
-		configuration = {
-			@Property(name = NewTcpReader.CONFIG_PROPERTY_NAME_PORT1, defaultValue = "10133",
-					description = "The first port of the server used for the TCP connection."),
-			@Property(name = NewTcpReader.CONFIG_PROPERTY_NAME_PORT2, defaultValue = "10134",
-					description = "The second port of the server used for the TCP connection.")
-		})
+outputPorts = {
+		@OutputPort(name = NewTcpReader.OUTPUT_PORT_NAME_RECORDS, eventTypes = { IMonitoringRecord.class }, description = "Output Port of the TCPReader")
+},
+configuration = {
+		@Property(name = NewTcpReader.CONFIG_PROPERTY_NAME_PORT1, defaultValue = "10133",
+				description = "The port of the server used for the TCP connection.")
+})
 public final class NewTcpReader extends AbstractReaderPlugin implements ReadListener {
 
 	/** The name of the output port delivering the received records. */
@@ -57,8 +56,6 @@ public final class NewTcpReader extends AbstractReaderPlugin implements ReadList
 
 	/** The name of the configuration determining the TCP port. */
 	public static final String CONFIG_PROPERTY_NAME_PORT1 = "port1";
-	/** The name of the configuration determining the TCP port. */
-	public static final String CONFIG_PROPERTY_NAME_PORT2 = "port2";
 
 	private static final int MESSAGE_BUFFER_SIZE = 65535;
 
@@ -111,7 +108,7 @@ public final class NewTcpReader extends AbstractReaderPlugin implements ReadList
 			final IRecordFactory<? extends IMonitoringRecord> recordFactory = NewTcpReader.this.cachedRecordFactoryCatalog.get(recordClassName);
 			final IMonitoringRecord record = recordFactory.create(buffer, NewTcpReader.this.stringRegistry);
 			record.setLoggingTimestamp(loggingTimestamp);
-			// System.out.println("Deserialized: " + record);
+
 			NewTcpReader.this.deliver(OUTPUT_PORT_NAME_RECORDS, record);
 		} catch (final BufferUnderflowException ex) {
 			NewTcpReader.this.log.error("Failed to create record.", ex);

@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************/
 
-package kieker.analysis.plugin.reader.tcp;
+package kieker.analysis.plugin.reader.tcp.generic;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -24,7 +24,6 @@ import java.nio.channels.ClosedByInterruptException;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
-import kieker.analysis.plugin.reader.tcp.newversion.ReadListener;
 import kieker.analysis.plugin.reader.tcp.newversion.ServerSocketChannelFactory;
 import kieker.common.logging.Log;
 

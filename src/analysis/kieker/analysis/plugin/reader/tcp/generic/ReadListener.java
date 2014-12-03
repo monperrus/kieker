@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************/
 
-package kieker.analysis.plugin.reader.tcp.newversion;
+package kieker.analysis.plugin.reader.tcp.generic;
 
 import java.nio.ByteBuffer;
 
