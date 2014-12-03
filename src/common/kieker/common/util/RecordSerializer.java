@@ -21,7 +21,6 @@ import java.nio.ByteBuffer;
 import kieker.common.record.IMonitoringRecord;
 import kieker.common.record.misc.RegistryRecord;
 import kieker.common.util.registry.IRegistry;
-import kieker.monitoring.writer.tcp.NewTcpWriter;
 
 /**
  * @author Christian Wulf
@@ -42,7 +41,7 @@ public final class RecordSerializer {
 
 		final int recordClassId;
 		if (record instanceof RegistryRecord) {
-			recordClassId = NewTcpWriter.REGISTRY_RECORD_CLASS_ID;
+			recordClassId = RegistryRecord.CLASS_ID;
 		} else {
 			// recordClassId = monitoringController.getUniqueIdForString(record.getClass().getName());
 			recordClassId = this.stringRegistry.get(record.getClass().getName());

@@ -49,7 +49,6 @@ public final class NewTcpWriter extends AbstractAsyncWriter {
 	// public static final String CONFIG_PORT2 = PREFIX + "port2"; // NOCS (afterPREFIX)
 	public static final String CONFIG_BUFFERSIZE = PREFIX + "bufferSize"; // NOCS (afterPREFIX)
 	public static final String CONFIG_FLUSH = PREFIX + "flush"; // NOCS (afterPREFIX)
-	public static final int REGISTRY_RECORD_CLASS_ID = -1;
 
 	// TODO final, JCTools
 	private Queue<IMonitoringRecord> queue;

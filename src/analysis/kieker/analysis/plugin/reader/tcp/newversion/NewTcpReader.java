@@ -34,7 +34,6 @@ import kieker.common.record.factory.IRecordFactory;
 import kieker.common.record.misc.RegistryRecord;
 import kieker.common.util.registry.ILookup;
 import kieker.common.util.registry.Lookup;
-import kieker.monitoring.writer.tcp.NewTcpWriter;
 
 /**
  * @author Christian Wulf
@@ -42,13 +41,13 @@ import kieker.monitoring.writer.tcp.NewTcpWriter;
  * @since 1.11
  */
 @Plugin(description = "A reader which reads records from a TCP port",
-outputPorts = {
-		@OutputPort(name = NewTcpReader.OUTPUT_PORT_NAME_RECORDS, eventTypes = { IMonitoringRecord.class }, description = "Output Port of the TCPReader")
-},
-configuration = {
-		@Property(name = NewTcpReader.CONFIG_PROPERTY_NAME_PORT1, defaultValue = "10133",
-				description = "The port of the server used for the TCP connection.")
-})
+		outputPorts = {
+			@OutputPort(name = NewTcpReader.OUTPUT_PORT_NAME_RECORDS, eventTypes = { IMonitoringRecord.class }, description = "Output Port of the TCPReader")
+		},
+		configuration = {
+			@Property(name = NewTcpReader.CONFIG_PROPERTY_NAME_PORT1, defaultValue = "10133",
+					description = "The port of the server used for the TCP connection.")
+		})
 public final class NewTcpReader extends AbstractReaderPlugin implements ReadListener {
 
 	/** The name of the output port delivering the received records. */
@@ -84,7 +83,7 @@ public final class NewTcpReader extends AbstractReaderPlugin implements ReadList
 		final int clazzId = buffer.getInt();
 		final long loggingTimestamp = buffer.getLong();
 
-		if (clazzId == NewTcpWriter.REGISTRY_RECORD_CLASS_ID) {
+		if (clazzId == RegistryRecord.CLASS_ID) {
 			this.deserializeStringRecord(clazzId, loggingTimestamp, buffer);
 		} else {
 			this.deserializeMonitoringRecord(clazzId, loggingTimestamp, buffer);
