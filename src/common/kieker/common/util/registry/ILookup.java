@@ -44,13 +44,22 @@ public interface ILookup<E> {
 
 	/**
 	 * Used for serialization
+	 *
+	 * @since 1.8
 	 */
 	int get(E value);
 
 	/**
 	 * Used for deserialization
+	 *
+	 * @since 1.8
 	 */
 	E get(int i);
 
+	/**
+	 * @return the number of registered elements
+	 *
+	 * @since 1.8
+	 */
 	int getSize();
 }

@@ -17,6 +17,9 @@
 package kieker.common.util.registry;
 
 /**
+ * @param <T>
+ *            the type of the elements
+ *
  * @author Christian Wulf
  *
  * @since 1.11

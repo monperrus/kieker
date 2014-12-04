@@ -28,11 +28,15 @@ public final class Registry<T> implements IRegistry<T> {
 
 	// TODO use a HPC implementation with primitive int values
 	// I recommend: http://labs.carrotsearch.com/hppc.html
-	private final Map<T, Integer> registeredEntries = new HashMap<T, Integer>();
+	private final Map<T, Integer> registeredEntries;
 	private int nextIdentifier;
 
 	// TODO remove if migration has been completed
 	private final ILookup<T> lookup = new Lookup<T>();
+
+	public Registry() {
+		this.registeredEntries = new HashMap<T, Integer>();
+	}
 
 	@Override
 	public int addIfAbsent(final T element) {

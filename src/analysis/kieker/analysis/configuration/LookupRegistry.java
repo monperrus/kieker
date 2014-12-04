@@ -28,8 +28,13 @@ import kieker.common.util.registry.newversion.Lookup;
  */
 class LookupRegistry<T> implements IRegistry<T>, ILookup<T> {
 
-	private final Registry<T> registry = new Registry<T>();
-	private final Lookup<T> lookup = new Lookup<T>();
+	private final Registry<T> registry;
+	private final Lookup<T> lookup;
+
+	public LookupRegistry() {
+		this.registry = new Registry<T>();
+		this.lookup = new Lookup<T>();
+	}
 
 	@Override
 	public void add(final int uniqueId, final T element) {
