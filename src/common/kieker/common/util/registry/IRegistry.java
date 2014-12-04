@@ -21,7 +21,8 @@ package kieker.common.util.registry;
  *
  * @since 1.11
  */
-public interface IRegistry<T> {
+// TODO remove "extends ILookup<T>" if migration has been completed
+public interface IRegistry<T> extends ILookup<T> {
 
 	/**
 	 * Registers the passed <code>element</code> if it has not yet been registered
@@ -37,6 +38,7 @@ public interface IRegistry<T> {
 	 *
 	 * @since 1.11
 	 */
+	@Override
 	int get(T element);
 
 	/**
@@ -44,5 +46,6 @@ public interface IRegistry<T> {
 	 *
 	 * @since 1.11
 	 */
+	@Override
 	int getSize();
 }

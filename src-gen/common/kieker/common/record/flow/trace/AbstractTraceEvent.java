@@ -21,7 +21,6 @@ import java.nio.ByteBuffer;
 
 import kieker.common.record.flow.AbstractEvent;
 import kieker.common.record.flow.ITraceRecord;
-import kieker.common.util.registry.ILookup;
 import kieker.common.util.registry.IRegistry;
 
 /**
@@ -103,7 +102,7 @@ public abstract class AbstractTraceEvent extends AbstractEvent implements ITrace
 	 */
 	@Override
 	@Deprecated
-	public void initFromBytes(final ByteBuffer buffer, final ILookup<String> stringRegistry) throws BufferUnderflowException {
+	public void initFromBytes(final ByteBuffer buffer, final IRegistry<String> stringRegistry) throws BufferUnderflowException {
 		throw new UnsupportedOperationException();
 	}
 

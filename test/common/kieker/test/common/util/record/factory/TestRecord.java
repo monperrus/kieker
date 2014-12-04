@@ -21,7 +21,6 @@ import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 
 import kieker.common.record.AbstractMonitoringRecord;
-import kieker.common.util.registry.ILookup;
 import kieker.common.util.registry.IRegistry;
 
 /**
@@ -50,7 +49,7 @@ public class TestRecord extends AbstractMonitoringRecord {
 	}
 
 	@Override
-	public void initFromBytes(final ByteBuffer buffer, final ILookup<String> stringRegistry) throws BufferUnderflowException {
+	public void initFromBytes(final ByteBuffer buffer, final IRegistry<String> stringRegistry) throws BufferUnderflowException {
 		// not used in test
 	}
 

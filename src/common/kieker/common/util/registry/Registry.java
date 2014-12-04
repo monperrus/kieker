@@ -31,6 +31,9 @@ public final class Registry<T> implements IRegistry<T> {
 	private final Map<T, Integer> registeredEntries = new HashMap<T, Integer>();
 	private int nextIdentifier;
 
+	// TODO remove if migration has been completed
+	private final ILookup<T> lookup = new Lookup<T>();
+
 	@Override
 	public int addIfAbsent(final T element) {
 		Integer uniqueId = this.registeredEntries.get(element);
@@ -49,6 +52,16 @@ public final class Registry<T> implements IRegistry<T> {
 	@Override
 	public int getSize() {
 		return this.registeredEntries.size();
+	}
+
+	@Override
+	public boolean set(final T value, final int id) {
+		return this.lookup.set(value, id);
+	}
+
+	@Override
+	public T get(final int i) {
+		return this.lookup.get(i);
 	}
 
 }

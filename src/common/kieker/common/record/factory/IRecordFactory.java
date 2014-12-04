@@ -18,7 +18,7 @@ package kieker.common.record.factory;
 
 import java.nio.ByteBuffer;
 
-import kieker.common.util.registry.ILookup;
+import kieker.common.util.registry.IRegistry;
 
 /**
  * @param <T>
@@ -39,7 +39,7 @@ public interface IRecordFactory<T> {
 	 * @return a new instance of the declared record type
 	 * @since 1.11
 	 */
-	T create(ByteBuffer buffer, ILookup<String> stringRegistry);
+	T create(ByteBuffer buffer, IRegistry<String> stringRegistry);
 
 	/**
 	 *

@@ -38,7 +38,8 @@ import kieker.common.record.factory.CachedRecordFactoryCatalog;
 import kieker.common.record.factory.IRecordFactory;
 import kieker.common.record.misc.RegistryRecord;
 import kieker.common.util.registry.ILookup;
-import kieker.common.util.registry.Lookup;
+import kieker.common.util.registry.IRegistry;
+import kieker.common.util.registry.Registry;
 
 /**
  * This is a reader which reads the records from a TCP port.
@@ -74,7 +75,7 @@ public final class TCPReader extends AbstractReaderPlugin {
 	private volatile boolean terminated = false; // NOPMD
 	private final int port1;
 	private final int port2;
-	private final ILookup<String> stringRegistry = new Lookup<String>();
+	private final IRegistry<String> stringRegistry = new Registry<String>();
 	private final CachedRecordFactoryCatalog cachedRecordFactoryCatalog = CachedRecordFactoryCatalog.getInstance();
 
 	public TCPReader(final Configuration configuration, final IProjectContext projectContext) {

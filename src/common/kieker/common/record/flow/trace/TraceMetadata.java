@@ -159,7 +159,7 @@ public class TraceMetadata extends AbstractMonitoringRecord implements IMonitori
 	 */
 	@Override
 	@Deprecated
-	public final void initFromBytes(final ByteBuffer buffer, final ILookup<String> stringRegistry) throws BufferUnderflowException {
+	public final void initFromBytes(final ByteBuffer buffer, final IRegistry<String> stringRegistry) throws BufferUnderflowException {
 		throw new UnsupportedOperationException();
 	}
 

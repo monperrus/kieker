@@ -42,8 +42,14 @@ public interface ILookup<E> {
 	 */
 	public boolean set(final E value, final int id);
 
+	/**
+	 * Used for serialization
+	 */
 	int get(E value);
 
+	/**
+	 * Used for deserialization
+	 */
 	E get(int i);
 
 	int getSize();

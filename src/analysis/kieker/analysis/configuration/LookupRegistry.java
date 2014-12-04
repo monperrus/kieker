@@ -58,4 +58,9 @@ class LookupRegistry<T> implements IRegistry<T>, ILookup<T> {
 		return this.registry.getSize();
 	}
 
+	@Override
+	public boolean set(final T value, final int id) {
+		return this.registry.set(value, id);
+	}
+
 }
