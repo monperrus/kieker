@@ -24,7 +24,7 @@ import kieker.common.record.AbstractMonitoringRecord;
 import kieker.common.record.IMonitoringRecord;
 import kieker.common.record.flow.IFlowRecord;
 import kieker.common.util.registry.ILookup;
-import kieker.common.util.registry.newversion.IRegistry;
+import kieker.common.util.registry.IRegistry;
 
 /**
  * @author Jan Waller

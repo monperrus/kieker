@@ -22,7 +22,7 @@ import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 
 import kieker.common.util.registry.ILookup;
-import kieker.common.util.registry.newversion.IRegistry;
+import kieker.common.util.registry.IRegistry;
 
 /**
  * All Kieker monitoring records have to implement this minimal interface.

@@ -21,19 +21,17 @@ import java.nio.ByteBuffer;
 
 import kieker.common.record.AbstractMonitoringRecord;
 import kieker.common.record.IMonitoringRecord;
+import kieker.common.util.registry.ILookup;
 import kieker.common.util.registry.IRegistry;
-import kieker.common.util.Version;
-
 
 /**
  * @author Nils Christian Ehmke
- * 
+ *
  * @since 1.10
  */
 public abstract class AbstractJVMRecord extends AbstractMonitoringRecord implements IMonitoringRecord.Factory, IMonitoringRecord.BinaryFactory {
-		private static final long serialVersionUID = 3817833790306987100L;
-	
-	
+	private static final long serialVersionUID = 3817833790306987100L;
+
 	/* user-defined constants */
 	/* default constants */
 	public static final String HOSTNAME = "";
@@ -45,7 +43,7 @@ public abstract class AbstractJVMRecord extends AbstractMonitoringRecord impleme
 
 	/**
 	 * Creates a new instance of this class using the given parameters.
-	 * 
+	 *
 	 * @param timestamp
 	 *            timestamp
 	 * @param hostname
@@ -55,14 +53,13 @@ public abstract class AbstractJVMRecord extends AbstractMonitoringRecord impleme
 	 */
 	public AbstractJVMRecord(final long timestamp, final String hostname, final String vmName) {
 		this.timestamp = timestamp;
-		this.hostname = hostname == null?"":hostname;
-		this.vmName = vmName == null?"":vmName;
+		this.hostname = hostname == null ? "" : hostname;
+		this.vmName = vmName == null ? "" : vmName;
 	}
 
-	
 	/**
 	 * This constructor uses the given array to initialize the fields of this record.
-	 * 
+	 *
 	 * @param values
 	 *            The values for the record.
 	 * @param valueTypes
@@ -77,14 +74,14 @@ public abstract class AbstractJVMRecord extends AbstractMonitoringRecord impleme
 
 	/**
 	 * This constructor converts the given array into a record.
-	 * 
+	 *
 	 * @param buffer
 	 *            The bytes for the record.
-	 * 
+	 *
 	 * @throws BufferUnderflowException
 	 *             if buffer not sufficient
 	 */
-	public AbstractJVMRecord(final ByteBuffer buffer, final IRegistry<String> stringRegistry) throws BufferUnderflowException {
+	public AbstractJVMRecord(final ByteBuffer buffer, final ILookup<String> stringRegistry) throws BufferUnderflowException {
 		this.timestamp = buffer.getLong();
 		this.hostname = stringRegistry.get(buffer.getInt());
 		this.vmName = stringRegistry.get(buffer.getInt());
@@ -92,7 +89,7 @@ public abstract class AbstractJVMRecord extends AbstractMonitoringRecord impleme
 
 	/**
 	 * {@inheritDoc}
-	 * 
+	 *
 	 * @deprecated This record uses the {@link kieker.common.record.IMonitoringRecord.Factory} mechanism. Hence, this method is not implemented.
 	 */
 	@Override
@@ -103,7 +100,7 @@ public abstract class AbstractJVMRecord extends AbstractMonitoringRecord impleme
 
 	/**
 	 * {@inheritDoc}
-	 * 
+	 *
 	 * @deprecated This record uses the {@link kieker.common.record.IMonitoringRecord.BinaryFactory} mechanism. Hence, this method is not implemented.
 	 */
 	@Override
@@ -115,13 +112,13 @@ public abstract class AbstractJVMRecord extends AbstractMonitoringRecord impleme
 	public final long getTimestamp() {
 		return this.timestamp;
 	}
-	
+
 	public final String getHostname() {
 		return this.hostname;
 	}
-	
+
 	public final String getVmName() {
 		return this.vmName;
 	}
-	
+
 }

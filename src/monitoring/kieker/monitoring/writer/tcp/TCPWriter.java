@@ -27,7 +27,7 @@ import kieker.common.logging.Log;
 import kieker.common.logging.LogFactory;
 import kieker.common.record.IMonitoringRecord;
 import kieker.common.record.misc.RegistryRecord;
-import kieker.common.util.registry.newversion.Registry;
+import kieker.common.util.registry.Registry;
 import kieker.monitoring.core.controller.IMonitoringController;
 import kieker.monitoring.writer.AbstractAsyncThread;
 import kieker.monitoring.writer.AbstractAsyncWriter;
@@ -80,7 +80,7 @@ final class TCPWriterThread extends AbstractAsyncThread {
 
 	private final SocketChannel socketChannel;
 	private final ByteBuffer byteBuffer;
-	private final kieker.common.util.registry.newversion.IRegistry<String> stringRegistry;
+	private final kieker.common.util.registry.IRegistry<String> stringRegistry;
 	private final boolean flush;
 
 	public TCPWriterThread(final IMonitoringController monitoringController, final BlockingQueue<IMonitoringRecord> writeQueue, final String hostname,

@@ -19,8 +19,8 @@ package kieker.monitoring.core.controller;
 import kieker.common.configuration.Configuration;
 import kieker.common.logging.Log;
 import kieker.common.logging.LogFactory;
-import kieker.common.util.registry.newversion.IRegistry;
-import kieker.common.util.registry.newversion.Registry;
+import kieker.common.util.registry.IRegistry;
+import kieker.common.util.registry.Registry;
 
 /**
  * @author Jan Waller

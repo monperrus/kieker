@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************/
 
-package kieker.common.util.registry.newversion;
+package kieker.common.util.registry;
 
 /**
  * @author Christian Wulf

@@ -19,21 +19,19 @@ package kieker.common.record.flow.trace;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 
-import kieker.common.util.registry.IRegistry;
-import kieker.common.util.Version;
-
 import kieker.common.record.flow.AbstractEvent;
 import kieker.common.record.flow.ITraceRecord;
+import kieker.common.util.registry.ILookup;
+import kieker.common.util.registry.IRegistry;
 
 /**
  * @author Jan Waller
- * 
+ *
  * @since 1.5
  */
 public abstract class AbstractTraceEvent extends AbstractEvent implements ITraceRecord {
-		private static final long serialVersionUID = 161681009968355282L;
-	
-	
+	private static final long serialVersionUID = 161681009968355282L;
+
 	/* user-defined constants */
 	/* default constants */
 	public static final long TRACE_ID = -1L;
@@ -44,7 +42,7 @@ public abstract class AbstractTraceEvent extends AbstractEvent implements ITrace
 
 	/**
 	 * Creates a new instance of this class using the given parameters.
-	 * 
+	 *
 	 * @param timestamp
 	 *            timestamp
 	 * @param traceId
@@ -58,10 +56,9 @@ public abstract class AbstractTraceEvent extends AbstractEvent implements ITrace
 		this.orderIndex = orderIndex;
 	}
 
-	
 	/**
 	 * This constructor uses the given array to initialize the fields of this record.
-	 * 
+	 *
 	 * @param values
 	 *            The values for the record.
 	 * @param valueTypes
@@ -75,10 +72,10 @@ public abstract class AbstractTraceEvent extends AbstractEvent implements ITrace
 
 	/**
 	 * This constructor converts the given array into a record.
-	 * 
+	 *
 	 * @param buffer
 	 *            The bytes for the record.
-	 * 
+	 *
 	 * @throws BufferUnderflowException
 	 *             if buffer not sufficient
 	 */
@@ -90,7 +87,7 @@ public abstract class AbstractTraceEvent extends AbstractEvent implements ITrace
 
 	/**
 	 * {@inheritDoc}
-	 * 
+	 *
 	 * @deprecated This record uses the {@link kieker.common.record.IMonitoringRecord.Factory} mechanism. Hence, this method is not implemented.
 	 */
 	@Override
@@ -101,21 +98,23 @@ public abstract class AbstractTraceEvent extends AbstractEvent implements ITrace
 
 	/**
 	 * {@inheritDoc}
-	 * 
+	 *
 	 * @deprecated This record uses the {@link kieker.common.record.IMonitoringRecord.BinaryFactory} mechanism. Hence, this method is not implemented.
 	 */
 	@Override
 	@Deprecated
-	public void initFromBytes(final ByteBuffer buffer, final IRegistry<String> stringRegistry) throws BufferUnderflowException {
+	public void initFromBytes(final ByteBuffer buffer, final ILookup<String> stringRegistry) throws BufferUnderflowException {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public final long getTraceId() {
 		return this.traceId;
 	}
-	
+
+	@Override
 	public final int getOrderIndex() {
 		return this.orderIndex;
 	}
-	
+
 }

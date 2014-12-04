@@ -27,7 +27,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import kieker.common.exception.MonitoringRecordException;
 import kieker.common.util.registry.ILookup;
-import kieker.common.util.registry.newversion.IRegistry;
+import kieker.common.util.registry.IRegistry;
 
 /**
  * @author Andre van Hoorn, Jan Waller, Nils Christian Ehmke

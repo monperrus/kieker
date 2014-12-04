@@ -16,7 +16,7 @@
 
 package kieker.monitoring.core.controller;
 
-import kieker.common.util.registry.newversion.IRegistry;
+import kieker.common.util.registry.IRegistry;
 
 /**
  * @author Jan Waller

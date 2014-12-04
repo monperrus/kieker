@@ -22,6 +22,7 @@ import java.nio.ByteBuffer;
 
 import kieker.common.record.AbstractMonitoringRecord;
 import kieker.common.record.IMonitoringRecord;
+import kieker.common.util.registry.ILookup;
 import kieker.common.util.registry.IRegistry;
 
 public class MyResponseTimeRecord extends AbstractMonitoringRecord implements IMonitoringRecord.Factory, IMonitoringRecord.BinaryFactory {
@@ -49,7 +50,7 @@ public class MyResponseTimeRecord extends AbstractMonitoringRecord implements IM
 		this.responseTimeNanos = (Long) values[2];
 	}
 
-	public MyResponseTimeRecord(final ByteBuffer buffer, final IRegistry<String> stringRegistry) throws BufferUnderflowException {
+	public MyResponseTimeRecord(final ByteBuffer buffer, final ILookup<String> stringRegistry) throws BufferUnderflowException {
 		this.className = stringRegistry.get(buffer.getInt());
 		this.methodName = stringRegistry.get(buffer.getInt());
 		this.responseTimeNanos = buffer.getLong();

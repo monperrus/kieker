@@ -16,10 +16,10 @@
 
 package kieker.analysis.configuration;
 
+import kieker.common.util.registry.IRegistry;
+import kieker.common.util.registry.Registry;
 import kieker.common.util.registry.newversion.ILookup;
-import kieker.common.util.registry.newversion.IRegistry;
 import kieker.common.util.registry.newversion.Lookup;
-import kieker.common.util.registry.newversion.Registry;
 
 /**
  * @author Christian Wulf
