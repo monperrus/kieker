@@ -12,6 +12,8 @@
   <exclude-pattern>.*/src-gen/.*</exclude-pattern>
   <!-- exclude userguide examples -->
   <exclude-pattern>.*/examples/userguide/.*</exclude-pattern>
+  <!-- exclude hppc library -->
+  <exclude-pattern>.*/src/common/com/carrotsearch/hppc/.*</exclude-pattern>
 
   <!-- We'll use the following rulesets -->
   <rule ref="rulesets/internal/all-java.xml">

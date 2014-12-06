@@ -8,6 +8,10 @@
 	</Match>
 	
 	<Match>
+		<Package name="~com\.carrotsearch\.hppc\..*" />
+	</Match>
+	
+	<Match>
 		<!-- Reason: http://trac.kieker-monitoring.net/ticket/1352 -->
 		<Class name="kieker.test.tools.junit.traceAnalysis.filter.visualization.descriptions.DescriptionDecoratorFilterTest" />
 		<Bug pattern=" BC_UNCONFIRMED_CAST_OF_RETURN_VALUE" />
