@@ -20,6 +20,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * @param <T>
+ *            the type of the elements
+ *
  * @author Christian Wulf
  *
  * @since 1.11
