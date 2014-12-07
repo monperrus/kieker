@@ -16,8 +16,8 @@
 
 package kieker.common.util.registry;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.carrotsearch.hppc.ObjectIntMap;
+import com.carrotsearch.hppc.ObjectIntOpenHashMap;
 
 /**
  * @param <T>
@@ -29,22 +29,22 @@ import java.util.Map;
  */
 public final class Registry<T> implements IRegistry<T> {
 
-	// TODO use a HPC implementation with primitive int values
-	// I recommend: http://labs.carrotsearch.com/hppc.html
-	private final Map<T, Integer> registeredEntries;
+	private static final int EMPTY_INDICATOR = Integer.MIN_VALUE;
+
+	private final ObjectIntMap<T> registeredEntries;
 	private int nextIdentifier;
 
-	// TODO remove if migration has been completed
+	// TODO: remove if migration has been completed
 	private final ILookup<T> lookup = new Lookup<T>();
 
 	public Registry() {
-		this.registeredEntries = new HashMap<T, Integer>();
+		this.registeredEntries = new ObjectIntOpenHashMap<T>();
 	}
 
 	@Override
 	public int addIfAbsent(final T element) {
-		Integer uniqueId = this.registeredEntries.get(element);
-		if (null == uniqueId) {
+		int uniqueId = this.registeredEntries.getOrDefault(element, EMPTY_INDICATOR);
+		if (EMPTY_INDICATOR == uniqueId) {
 			uniqueId = this.nextIdentifier++;
 			this.registeredEntries.put(element, uniqueId);
 		}
