@@ -23,27 +23,25 @@ import java.nio.ByteBuffer;
 import kieker.common.record.AbstractMonitoringRecord;
 import kieker.common.record.IMonitoringRecord;
 import kieker.common.util.registry.IRegistry;
-import kieker.common.util.Version;
-
 
 /**
  * @author Andre van Hoorn, Jan Waller
- * 
+ *
  * @since 0.91
  */
 public class OperationExecutionRecord extends AbstractMonitoringRecord implements IMonitoringRecord.Factory, IMonitoringRecord.BinaryFactory {
 	/** Descriptive definition of the serialization size of the record. */
 	public static final int SIZE = TYPE_SIZE_STRING // OperationExecutionRecord.operationSignature
-			 + TYPE_SIZE_STRING // OperationExecutionRecord.sessionId
-			 + TYPE_SIZE_LONG // OperationExecutionRecord.traceId
-			 + TYPE_SIZE_LONG // OperationExecutionRecord.tin
-			 + TYPE_SIZE_LONG // OperationExecutionRecord.tout
-			 + TYPE_SIZE_STRING // OperationExecutionRecord.hostname
-			 + TYPE_SIZE_INT // OperationExecutionRecord.eoi
-			 + TYPE_SIZE_INT // OperationExecutionRecord.ess
+			+ TYPE_SIZE_STRING // OperationExecutionRecord.sessionId
+			+ TYPE_SIZE_LONG // OperationExecutionRecord.traceId
+			+ TYPE_SIZE_LONG // OperationExecutionRecord.tin
+			+ TYPE_SIZE_LONG // OperationExecutionRecord.tout
+			+ TYPE_SIZE_STRING // OperationExecutionRecord.hostname
+			+ TYPE_SIZE_INT // OperationExecutionRecord.eoi
+			+ TYPE_SIZE_INT // OperationExecutionRecord.ess
 	;
 	private static final long serialVersionUID = -4883357436134811919L;
-	
+
 	public static final Class<?>[] TYPES = {
 		String.class, // OperationExecutionRecord.operationSignature
 		String.class, // OperationExecutionRecord.sessionId
@@ -54,7 +52,7 @@ public class OperationExecutionRecord extends AbstractMonitoringRecord implement
 		int.class, // OperationExecutionRecord.eoi
 		int.class, // OperationExecutionRecord.ess
 	};
-	
+
 	/* user-defined constants */
 	public static final String NO_HOSTNAME = "<default-host>";
 	public static final String NO_SESSION_ID = "<no-session-id>";
@@ -83,7 +81,7 @@ public class OperationExecutionRecord extends AbstractMonitoringRecord implement
 
 	/**
 	 * Creates a new instance of this class using the given parameters.
-	 * 
+	 *
 	 * @param operationSignature
 	 *            operationSignature
 	 * @param sessionId
@@ -101,21 +99,22 @@ public class OperationExecutionRecord extends AbstractMonitoringRecord implement
 	 * @param ess
 	 *            ess
 	 */
-	public OperationExecutionRecord(final String operationSignature, final String sessionId, final long traceId, final long tin, final long tout, final String hostname, final int eoi, final int ess) {
-		this.operationSignature = operationSignature == null?NO_OPERATION_SIGNATURE:operationSignature;
-		this.sessionId = sessionId == null?NO_SESSION_ID:sessionId;
+	public OperationExecutionRecord(final String operationSignature, final String sessionId, final long traceId, final long tin, final long tout,
+			final String hostname, final int eoi, final int ess) {
+		this.operationSignature = operationSignature == null ? NO_OPERATION_SIGNATURE : operationSignature;
+		this.sessionId = sessionId == null ? NO_SESSION_ID : sessionId;
 		this.traceId = traceId;
 		this.tin = tin;
 		this.tout = tout;
-		this.hostname = hostname == null?NO_HOSTNAME:hostname;
-		this.eoi = eoi;
-		this.ess = ess;
+		this.hostname = hostname == null ? NO_HOSTNAME : hostname;
+		this.eoi = EOI;
+		this.ess = ESS;
 	}
 
 	/**
 	 * This constructor converts the given array into a record.
 	 * It is recommended to use the array which is the result of a call to {@link #toArray()}.
-	 * 
+	 *
 	 * @param values
 	 *            The values for the record.
 	 */
@@ -130,10 +129,10 @@ public class OperationExecutionRecord extends AbstractMonitoringRecord implement
 		this.eoi = (Integer) values[6];
 		this.ess = (Integer) values[7];
 	}
-	
+
 	/**
 	 * This constructor uses the given array to initialize the fields of this record.
-	 * 
+	 *
 	 * @param values
 	 *            The values for the record.
 	 * @param valueTypes
@@ -153,10 +152,10 @@ public class OperationExecutionRecord extends AbstractMonitoringRecord implement
 
 	/**
 	 * This constructor converts the given array into a record.
-	 * 
+	 *
 	 * @param buffer
 	 *            The bytes for the record.
-	 * 
+	 *
 	 * @throws BufferUnderflowException
 	 *             if buffer not sufficient
 	 */
@@ -218,9 +217,10 @@ public class OperationExecutionRecord extends AbstractMonitoringRecord implement
 	public int getSize() {
 		return SIZE;
 	}
+
 	/**
 	 * {@inheritDoc}
-	 * 
+	 *
 	 * @deprecated This record uses the {@link kieker.common.record.IMonitoringRecord.Factory} mechanism. Hence, this method is not implemented.
 	 */
 	@Override
@@ -231,7 +231,7 @@ public class OperationExecutionRecord extends AbstractMonitoringRecord implement
 
 	/**
 	 * {@inheritDoc}
-	 * 
+	 *
 	 * @deprecated This record uses the {@link kieker.common.record.IMonitoringRecord.BinaryFactory} mechanism. Hence, this method is not implemented.
 	 */
 	@Override
@@ -243,33 +243,33 @@ public class OperationExecutionRecord extends AbstractMonitoringRecord implement
 	public final String getOperationSignature() {
 		return this.operationSignature;
 	}
-	
+
 	public final String getSessionId() {
 		return this.sessionId;
 	}
-	
+
 	public final long getTraceId() {
 		return this.traceId;
 	}
-	
+
 	public final long getTin() {
 		return this.tin;
 	}
-	
+
 	public final long getTout() {
 		return this.tout;
 	}
-	
+
 	public final String getHostname() {
 		return this.hostname;
 	}
-	
+
 	public final int getEoi() {
 		return this.eoi;
 	}
-	
+
 	public final int getEss() {
 		return this.ess;
 	}
-	
+
 }

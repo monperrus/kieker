@@ -115,5 +115,7 @@
 	<classpathentry kind="lib" path="examples/JavaEEServletContainerExample/jetty/lib/jetty-websocket-8.1.16.v20140903.jar"/>
 	<classpathentry kind="lib" path="examples/JavaEEServletContainerExample/jetty/lib/jetty-xml-8.1.16.v20140903.jar"/>
 	<classpathentry kind="lib" path="examples/JavaEEServletContainerExample/jetty/webapps/jpetstore/WEB-INF/lib/aopalliance-1.0.jar"/>
+	<classpathentry kind="lib" path="lib/bcel-5.1-jnbridge.jar"/>
+	<classpathentry kind="lib" path="lib/jnbcore.jar"/>
 	<classpathentry kind="output" path="build-eclipse"/>
 </classpath>
