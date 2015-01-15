@@ -22,7 +22,6 @@ import java.util.Queue;
 import kieker.common.configuration.Configuration;
 import kieker.common.record.IMonitoringRecord;
 import kieker.monitoring.core.configuration.ConfigurationFactory;
-import kieker.monitoring.timer.ITimeSource;
 
 /**
  * @author Rexhep Hamiti
@@ -31,27 +30,35 @@ import kieker.monitoring.timer.ITimeSource;
  */
 public class JNBridgeMonitoringController {
 
-	private final Queue<JNBridgeMonitoringController> recordQueue;
-	private final TimeSourceController timeSourceController;
-	private final WriterController writerController;
+	private final Queue<IMonitoringRecord> recordQueue;
+	private final long offset;
 
-	private JNBridgeMonitoringController(final Configuration configuration) {
-		this.timeSourceController = new TimeSourceController(configuration);
-		this.writerController = new WriterController(configuration);
-		this.recordQueue = new LinkedList<JNBridgeMonitoringController>();
+	public JNBridgeMonitoringController() {
+		this.recordQueue = new LinkedList<IMonitoringRecord>();
+		this.offset = System.nanoTime();
 	}
 
+	/**
+	 *
+	 */
 	public final boolean newMonitoringRecord(final IMonitoringRecord record) {
-		return this.writerController.newMonitoringRecord(record);
+		return this.recordQueue.add(record);
 	}
 
-	public final ITimeSource getTimeSource() {
-		return this.timeSourceController.getTimeSource();
+	/**
+	 *
+	 */
+	public final long getTime() {
+		return System.nanoTime() - this.offset;
+	}
+
+	public final Queue<IMonitoringRecord> getQueue() {
+		return this.recordQueue;
 	}
 
 	// GET SINGLETON INSTANCE
 	// #############################
-	public static final IMonitoringController getInstance() {
+	public static final JNBridgeMonitoringController getInstance() {
 		return LazyHolder.INSTANCE;
 	}
 
@@ -59,6 +66,11 @@ public class JNBridgeMonitoringController {
 	 * SINGLETON.
 	 */
 	private static final class LazyHolder { // NOCS
-		static final IMonitoringController INSTANCE = MonitoringController.createInstance(ConfigurationFactory.createSingletonConfiguration()); // NOPMD package
+		static final JNBridgeMonitoringController INSTANCE = JNBridgeMonitoringController.createInstance(ConfigurationFactory.createSingletonConfiguration()); // NOPMD
+		// package
+	}
+
+	public static JNBridgeMonitoringController createInstance(final Configuration createSingletonConfiguration) {
+		return new JNBridgeMonitoringController();
 	}
 }

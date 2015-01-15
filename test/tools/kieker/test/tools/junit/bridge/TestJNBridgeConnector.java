@@ -22,7 +22,6 @@ import kieker.common.configuration.Configuration;
 import kieker.monitoring.core.configuration.ConfigurationFactory;
 import kieker.tools.bridge.connector.ConnectorDataTransmissionException;
 import kieker.tools.bridge.connector.jnbridge.JNBridgeConnector;
-import kieker.tools.bridge.connector.tcp.TCPSingleServerConnector;
 
 /**
  * @author Rexhep Hamiti
@@ -47,11 +46,10 @@ public class TestJNBridgeConnector extends AbstractConnectorTest {
 	@Test
 	public void testJNBridgeConnector() throws ConnectorDataTransmissionException { // NOPMD
 		// start one client for the test
-		final Thread clientThread = new Thread(new TCPClientforServer(ConfigurationParameters.TCP_SINGLE_PORT), "T1");
+		final Thread clientThread = new Thread(new JNBClientforServer(), "T1");
 		clientThread.start();
 
 		final Configuration configuration = ConfigurationFactory.createSingletonConfiguration();
-		configuration.setProperty(TCPSingleServerConnector.PORT, String.valueOf(ConfigurationParameters.TCP_SINGLE_PORT));
 		// test the connector
 		this.setConnector(new JNBridgeConnector(configuration, this.createLookupEntityMap()));
 		this.initialize();

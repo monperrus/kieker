@@ -22,6 +22,7 @@ import com.jnbridge.jnbcore.server.ServerException;
 
 import kieker.common.configuration.Configuration;
 import kieker.common.record.IMonitoringRecord;
+import kieker.monitoring.core.controller.JNBridgeMonitoringController;
 import kieker.tools.bridge.LookupEntity;
 import kieker.tools.bridge.connector.AbstractConnector;
 import kieker.tools.bridge.connector.ConnectorDataTransmissionException;
@@ -34,6 +35,8 @@ import kieker.tools.bridge.connector.ConnectorEndOfDataException;
  */
 public class JNBridgeConnector extends AbstractConnector {
 
+	private JNBridgeMonitoringController controller;
+
 	public JNBridgeConnector(final Configuration configuration, final ConcurrentMap<Integer, LookupEntity> lookupEntityMap) {
 		super(configuration, lookupEntityMap);
 	}
@@ -42,6 +45,7 @@ public class JNBridgeConnector extends AbstractConnector {
 	public void initialize() throws ConnectorDataTransmissionException {
 		try {
 			com.jnbridge.jnbcore.JNBMain.start("C:/Program Files/JNBridge/JNBridgePro v5.1 x64/jnbcore/jnbcore_tcp.properties");
+			this.controller = new JNBridgeMonitoringController();
 		} catch (final ServerException e) {
 			throw new ConnectorDataTransmissionException(e.getMessage(), e);
 		}
@@ -58,6 +62,6 @@ public class JNBridgeConnector extends AbstractConnector {
 
 	@Override
 	public IMonitoringRecord deserializeNextRecord() throws ConnectorDataTransmissionException, ConnectorEndOfDataException {
-		return null;
+		return this.controller.getQueue().poll();
 	}
 }
