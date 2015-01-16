@@ -17,9 +17,11 @@
 package kieker.tools.bridge.connector.tcp;
 
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.concurrent.ConcurrentMap;
 
 import kieker.common.configuration.Configuration;
@@ -29,6 +31,8 @@ import kieker.tools.bridge.connector.AbstractConnector;
 import kieker.tools.bridge.connector.ConnectorDataTransmissionException;
 import kieker.tools.bridge.connector.ConnectorEndOfDataException;
 import kieker.tools.bridge.connector.ConnectorProperty;
+
+import kieker.test.tools.junit.bridge.adaptiveMonitoring.SignatureActivationCheckRecord;
 
 /**
  * TCP server connector supporting one client.
@@ -60,6 +64,7 @@ public class TCPSingleServerConnector extends AbstractConnector {
 	 * Internal data input stream.
 	 */
 	private DataInputStream in;
+	private DataOutputStream out;
 
 	private final byte[] buffer = new byte[BUF_LEN];
 
@@ -87,7 +92,9 @@ public class TCPSingleServerConnector extends AbstractConnector {
 	public void initialize() throws ConnectorDataTransmissionException {
 		try {
 			this.serverSocket = new ServerSocket(this.port);
-			this.in = new DataInputStream(this.serverSocket.accept().getInputStream());
+			final Socket socket = this.serverSocket.accept();
+			this.in = new DataInputStream(socket.getInputStream());
+			this.out = new DataOutputStream(socket.getOutputStream());
 		} catch (final IOException e) {
 			throw new ConnectorDataTransmissionException(e.getMessage(), e);
 		}
@@ -104,6 +111,7 @@ public class TCPSingleServerConnector extends AbstractConnector {
 	public void close() throws ConnectorDataTransmissionException {
 		try {
 			this.in.close();
+			this.out.close();
 			this.serverSocket.close();
 		} catch (final IOException e) {
 			throw new ConnectorDataTransmissionException(e.getMessage(), e);
@@ -125,51 +133,61 @@ public class TCPSingleServerConnector extends AbstractConnector {
 	public IMonitoringRecord deserializeNextRecord() throws ConnectorDataTransmissionException, ConnectorEndOfDataException {
 		// read structure ID
 		try {
+
 			final Integer id = this.in.readInt();
 			final LookupEntity recordProperty = this.lookupEntityMap.get(id);
 			if (recordProperty != null) {
-				final Object[] values = new Object[recordProperty.getParameterTypes().length];
+				if (id == -1) {
+					final int bufLen = this.in.readInt();
+					this.in.readFully(this.buffer, 0, bufLen);
+					final String opSignature = new String(this.buffer, 0, bufLen, "UTF-8");
 
-				for (int i = 0; i < recordProperty.getParameterTypes().length; i++) {
-					final Class<?> parameterType = recordProperty.getParameterTypes()[i];
-					if (boolean.class.equals(parameterType)) {
-						values[i] = this.in.readBoolean();
-					} else if (Boolean.class.equals(parameterType)) {
-						values[i] = Boolean.valueOf(this.in.readBoolean());
-					} else if (byte.class.equals(parameterType)) {
-						values[i] = this.in.readByte();
-					} else if (Byte.class.equals(parameterType)) {
-						values[i] = Byte.valueOf(this.in.readByte());
-					} else if (short.class.equals(parameterType)) { // NOPMD
-						values[i] = this.in.readShort();
-					} else if (Short.class.equals(parameterType)) {
-						values[i] = Short.valueOf(this.in.readShort());
-					} else if (int.class.equals(parameterType)) {
-						values[i] = this.in.readInt();
-					} else if (Integer.class.equals(parameterType)) {
-						values[i] = Integer.valueOf(this.in.readInt());
-					} else if (long.class.equals(parameterType)) {
-						values[i] = this.in.readLong();
-					} else if (Long.class.equals(parameterType)) {
-						values[i] = Long.valueOf(this.in.readLong());
-					} else if (float.class.equals(parameterType)) {
-						values[i] = this.in.readFloat();
-					} else if (Float.class.equals(parameterType)) {
-						values[i] = Float.valueOf(this.in.readFloat());
-					} else if (double.class.equals(parameterType)) {
-						values[i] = this.in.readDouble();
-					} else if (Double.class.equals(parameterType)) {
-						values[i] = Double.valueOf(this.in.readDouble());
-					} else if (String.class.equals(parameterType)) {
-						final int bufLen = this.in.readInt();
-						this.in.readFully(this.buffer, 0, bufLen);
-						values[i] = new String(this.buffer, 0, bufLen, "UTF-8");
-					} else { // reference types
-						throw new ConnectorDataTransmissionException("References are not yet supported.");
+					return new SignatureActivationCheckRecord(opSignature);
+
+				} else {
+					final Object[] values = new Object[recordProperty.getParameterTypes().length];
+
+					for (int i = 0; i < recordProperty.getParameterTypes().length; i++) {
+						final Class<?> parameterType = recordProperty.getParameterTypes()[i];
+						if (boolean.class.equals(parameterType)) {
+							values[i] = this.in.readBoolean();
+						} else if (Boolean.class.equals(parameterType)) {
+							values[i] = Boolean.valueOf(this.in.readBoolean());
+						} else if (byte.class.equals(parameterType)) {
+							values[i] = this.in.readByte();
+						} else if (Byte.class.equals(parameterType)) {
+							values[i] = Byte.valueOf(this.in.readByte());
+						} else if (short.class.equals(parameterType)) { // NOPMD
+							values[i] = this.in.readShort();
+						} else if (Short.class.equals(parameterType)) {
+							values[i] = Short.valueOf(this.in.readShort());
+						} else if (int.class.equals(parameterType)) {
+							values[i] = this.in.readInt();
+						} else if (Integer.class.equals(parameterType)) {
+							values[i] = Integer.valueOf(this.in.readInt());
+						} else if (long.class.equals(parameterType)) {
+							values[i] = this.in.readLong();
+						} else if (Long.class.equals(parameterType)) {
+							values[i] = Long.valueOf(this.in.readLong());
+						} else if (float.class.equals(parameterType)) {
+							values[i] = this.in.readFloat();
+						} else if (Float.class.equals(parameterType)) {
+							values[i] = Float.valueOf(this.in.readFloat());
+						} else if (double.class.equals(parameterType)) {
+							values[i] = this.in.readDouble();
+						} else if (Double.class.equals(parameterType)) {
+							values[i] = Double.valueOf(this.in.readDouble());
+						} else if (String.class.equals(parameterType)) {
+							final int bufLen = this.in.readInt();
+							this.in.readFully(this.buffer, 0, bufLen);
+							values[i] = new String(this.buffer, 0, bufLen, "UTF-8");
+						} else { // reference types
+							throw new ConnectorDataTransmissionException("References are not yet supported.");
+						}
 					}
-				}
 
-				return recordProperty.getConstructor().newInstance(values);
+					return recordProperty.getConstructor().newInstance(values);
+				}
 			} else {
 				throw new ConnectorDataTransmissionException("Record type " + id + " is not registered.");
 			}
@@ -187,6 +205,15 @@ public class TCPSingleServerConnector extends AbstractConnector {
 			throw new ConnectorDataTransmissionException(e.getMessage(), e);
 		} catch (final InvocationTargetException e) {
 			throw new ConnectorDataTransmissionException(e.getMessage(), e);
+		}
+	}
+
+	@Override
+	public void deliverSignatureActivationStatus(final boolean enabled) throws IOException {
+		if (enabled) {
+			this.out.writeInt(1);
+		} else {
+			this.out.writeInt(0);
 		}
 	}
 }

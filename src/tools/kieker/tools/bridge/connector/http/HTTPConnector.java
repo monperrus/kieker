@@ -49,9 +49,9 @@ import kieker.tools.bridge.connector.ConnectorProperty;
 
 /**
  * A connector receiving records via a REST URL.
- *
+ * 
  * @author Nils Christian Ehmke
- *
+ * 
  * @since 1.11
  */
 @ConnectorProperty(cmdName = "http-rest", name = "REST/HTTP Connector", description = "HTTP Client to receive records via a REST URL.")
@@ -117,9 +117,9 @@ public final class HTTPConnector extends AbstractConnector {
 
 	/**
 	 * A helper class which is responsible for the actual monitoring record receiving via HTTP.
-	 *
+	 * 
 	 * @author Nils Christian Ehmke
-	 *
+	 * 
 	 * @since 1.11
 	 */
 	private static class MonitoringReceiverServlet extends HttpServlet {
@@ -180,5 +180,8 @@ public final class HTTPConnector extends AbstractConnector {
 			}
 		}
 	}
+
+	@Override
+	public void deliverSignatureActivationStatus(final boolean b) throws IOException {}
 
 }

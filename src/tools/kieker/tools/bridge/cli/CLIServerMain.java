@@ -59,7 +59,7 @@ import kieker.tools.util.CLIHelpFormatter;
 
 /**
  * The command line server of the KDB.
- *
+ * 
  * @author Reiner Jung
  * @since 1.8
  */
@@ -132,7 +132,7 @@ public final class CLIServerMain {
 
 	/**
 	 * CLI server main.
-	 *
+	 * 
 	 * @param args
 	 *            command line arguments
 	 */
@@ -238,13 +238,14 @@ public final class CLIServerMain {
 
 	/**
 	 * Execute the bridge service.
-	 *
+	 * 
 	 * @param connector
-	 *
+	 * 
 	 * @throws ConnectorDataTransmissionException
 	 *             if an error occured during connector operations
+	 * @throws IOException
 	 */
-	private static void runService(final Configuration configuration, final IServiceConnector connector) throws ConnectorDataTransmissionException {
+	private static void runService(final Configuration configuration, final IServiceConnector connector) throws ConnectorDataTransmissionException, IOException {
 		if (verbose) {
 			final String updateIntervalParam = commandLine.getOptionValue(CMD_VERBOSE);
 			container.setListenerUpdateInterval((updateIntervalParam != null) ? Long.parseLong(updateIntervalParam) // NOCS
@@ -292,7 +293,7 @@ public final class CLIServerMain {
 
 	/**
 	 * Hook for the shutdwon thread so it can access the container's shutdown routine.
-	 *
+	 * 
 	 * @throws ConnectorDataTransmissionException
 	 *             if any internal shutdown calls fail
 	 */
@@ -302,7 +303,7 @@ public final class CLIServerMain {
 
 	/**
 	 * Create a record map of classes implementing IMonitoringRecord interface out of libraries with such classes and a textual mapping file.
-	 *
+	 * 
 	 * @return A record map. null is never returned as a call of usage terminates the program.
 	 * @throws IOException
 	 *             if an error occured reading the mapping file
@@ -330,10 +331,10 @@ public final class CLIServerMain {
 
 	/**
 	 * Interpret command line type option.
-	 *
+	 * 
 	 * @param lookupEntityMap
 	 *            the map for ids to Kieker records
-	 *
+	 * 
 	 * @return a reference to an ServiceContainer
 	 * @throws CLIConfigurationErrorException
 	 *             if an error occured in setting up a connector or if an unknown service connector was specified
@@ -351,7 +352,7 @@ public final class CLIServerMain {
 
 	/**
 	 * Create a connector instance for the given class.
-	 *
+	 * 
 	 * @param connector
 	 *            the connector class
 	 * @param configuration
@@ -383,7 +384,7 @@ public final class CLIServerMain {
 
 	/**
 	 * Print out the server usage and an additional message describing the cause of the failure. Finally terminate the server.
-	 *
+	 * 
 	 * @param message
 	 *            the message to be printed
 	 * @param code
@@ -397,12 +398,12 @@ public final class CLIServerMain {
 
 	/**
 	 * Read the CLI server Kieker classes to id mapping file.
-	 *
+	 * 
 	 * @param libraries
 	 *            array representing a list of library files (*.jar)
 	 * @param filename
 	 *            the path of the mapping file.
-	 *
+	 * 
 	 * @return a complete IMonitoringRecord to id mapping
 	 * @throws IOException
 	 *             If one or more of the given library URLs is somehow invalid or one of the given files could not be accessed.
@@ -449,7 +450,7 @@ public final class CLIServerMain {
 
 	/**
 	 * Compile the options for the CLI server.
-	 *
+	 * 
 	 * @return The composed options for the CLI server
 	 */
 	private static Options declareOptions() {
@@ -531,7 +532,7 @@ public final class CLIServerMain {
 
 	/**
 	 * Check for pid file.
-	 *
+	 * 
 	 * @return A pid file object
 	 * @throws IOException
 	 *             if file definition fails or the file already exists
@@ -556,7 +557,7 @@ public final class CLIServerMain {
 
 	/**
 	 * Return the logger.
-	 *
+	 * 
 	 * @return Returns the logger
 	 */
 	public static Log getLog() {

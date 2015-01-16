@@ -16,6 +16,8 @@
 
 package kieker.tools.bridge.connector;
 
+import java.io.IOException;
+
 import kieker.common.record.IMonitoringRecord;
 
 /**
@@ -58,4 +60,6 @@ public interface IServiceConnector {
 	 * @since 1.8
 	 */
 	void close() throws ConnectorDataTransmissionException;
+
+	void deliverSignatureActivationStatus(boolean b) throws IOException;
 }

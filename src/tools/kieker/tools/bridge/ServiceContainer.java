@@ -16,15 +16,19 @@
 
 package kieker.tools.bridge;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import kieker.common.configuration.Configuration;
+import kieker.common.record.IMonitoringRecord;
 import kieker.monitoring.core.controller.IMonitoringController;
 import kieker.monitoring.core.controller.MonitoringController;
 import kieker.tools.bridge.connector.ConnectorDataTransmissionException;
 import kieker.tools.bridge.connector.ConnectorEndOfDataException;
 import kieker.tools.bridge.connector.IServiceConnector;
+
+import kieker.test.tools.junit.bridge.adaptiveMonitoring.SignatureActivationCheckRecord;
 
 /**
  * Container for the Kieker Data Bridge handling the startup and shutdown of Kieker and the service connector.
@@ -51,6 +55,7 @@ public class ServiceContainer {
 
 	private volatile boolean respawn;
 	private volatile long listenerUpdateInterval = DEFAULT_LISTENER_UPDATE_INTERVAL;
+	private int cacheMisses;
 
 	/**
 	 * @param configuration
@@ -71,17 +76,27 @@ public class ServiceContainer {
 	 * 
 	 * @throws ConnectorDataTransmissionException
 	 *             if deserializeNextRecord exits with a ConnectorDataTransmissionException
+	 * @throws IOException
 	 */
-	public void run() throws ConnectorDataTransmissionException {
+	public void run() throws ConnectorDataTransmissionException, IOException {
 		do {
 			this.updateState("Starting service container.");
 			this.service.initialize();
 			this.active = true;
 			while (this.active) {
 				try {
-					this.kiekerMonitoringController.newMonitoringRecord(this.service.deserializeNextRecord());
-					if ((this.kiekerMonitoringController.getNumberOfInserts() % this.listenerUpdateInterval) == 0) {
-						this.updateState(this.listenerUpdateInterval + " records received.");
+					final IMonitoringRecord rc = this.service.deserializeNextRecord();
+					if (rc instanceof SignatureActivationCheckRecord) {
+						System.out.println("Activation Request");
+						final boolean enabled = this.kiekerMonitoringController.isProbeActivated(((SignatureActivationCheckRecord) rc).getOperationSignature());
+						this.service.deliverSignatureActivationStatus(enabled);
+						this.cacheMisses++;
+					} else {
+						System.out.println("No Cache Miss");
+						this.kiekerMonitoringController.newMonitoringRecord(rc);
+						if ((this.kiekerMonitoringController.getNumberOfInserts() % this.listenerUpdateInterval) == 0) {
+							this.updateState(this.listenerUpdateInterval + " records received.");
+						}
 					}
 				} catch (final ConnectorEndOfDataException e) {
 					this.active = false;
@@ -147,5 +162,17 @@ public class ServiceContainer {
 
 	public boolean isRespawn() {
 		return this.respawn;
+	}
+
+	public int getCacheMisses() {
+		return this.cacheMisses;
+	}
+
+	public boolean activateProbe(final String pattern) {
+		return this.kiekerMonitoringController.activateProbe(pattern);
+	}
+
+	public boolean deactivateProbe(final String pattern) {
+		return this.kiekerMonitoringController.deactivateProbe(pattern);
 	}
 }

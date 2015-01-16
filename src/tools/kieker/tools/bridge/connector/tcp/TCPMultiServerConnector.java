@@ -156,4 +156,7 @@ public class TCPMultiServerConnector extends AbstractConnector {
 		}
 	}
 
+	@Override
+	public void deliverSignatureActivationStatus(final boolean b) throws IOException {}
+
 }

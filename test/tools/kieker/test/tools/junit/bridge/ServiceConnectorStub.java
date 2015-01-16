@@ -15,6 +15,8 @@
  ***************************************************************************/
 package kieker.test.tools.junit.bridge;
 
+import java.io.IOException;
+
 import org.junit.Assert;
 
 import kieker.common.record.IMonitoringRecord;
@@ -93,5 +95,8 @@ public class ServiceConnectorStub implements IServiceConnector {
 		Assert.assertTrue("Connector's close() method was called before initialite() was called.", this.initialize);
 		Assert.assertTrue("Connector's close() method was called more than once.", !this.close);
 	}
+
+	@Override
+	public void deliverSignatureActivationStatus(final boolean b) throws IOException {}
 
 }

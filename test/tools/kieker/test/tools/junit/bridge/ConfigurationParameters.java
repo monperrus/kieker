@@ -59,6 +59,8 @@ public final class ConfigurationParameters {
 	 */
 	public static final int TEST_RECORD_ID = 1;
 	public static final String TEST_OPERATION_SIGNATURE = "some.operation.signature(final int a, final int b)"; // NOCS
+	public static final String TEST_OPERATION_SIGNATURE_2 = "some.operation.signature2()"; // NOCS
+	public static final String TEST_OPERATION_SIGNATURE_3 = "some.operation.signature3()"; // NOCS
 	public static final String TEST_SESSION_ID = "Sessions"; // NOCS
 	public static final long TEST_TRACE_ID = 4; // NOCS
 	public static final long TEST_TIN = 2; // NOCS

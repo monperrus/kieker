@@ -185,4 +185,7 @@ public class TCPClientConnector extends AbstractConnector {
 			throw new ConnectorDataTransmissionException(e.getMessage(), e);
 		}
 	}
+
+	@Override
+	public void deliverSignatureActivationStatus(final boolean b) throws IOException {}
 }

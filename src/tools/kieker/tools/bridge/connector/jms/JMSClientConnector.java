@@ -16,6 +16,7 @@
 
 package kieker.tools.bridge.connector.jms;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Hashtable;
@@ -321,4 +322,7 @@ public class JMSClientConnector extends AbstractConnector {
 		}
 
 	}
+
+	@Override
+	public void deliverSignatureActivationStatus(final boolean b) throws IOException {}
 }
