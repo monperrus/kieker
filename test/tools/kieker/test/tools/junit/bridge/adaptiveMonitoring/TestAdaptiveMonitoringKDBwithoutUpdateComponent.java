@@ -16,6 +16,8 @@
 package kieker.test.tools.junit.bridge.adaptiveMonitoring;
 
 import java.io.IOException;
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -37,34 +39,38 @@ import kieker.tools.bridge.connector.tcp.TCPSingleServerConnector;
 import kieker.test.tools.junit.bridge.ConfigurationParameters;
 
 /**
+ * JUnit test, which tests the probe-activation-request and -answer between Probe-Side and KDB-Side.
+ * Furthermore related to that, the working local signature-cache on Probe-Side.
  * 
  * @author Micky Singh Multani
  * 
  * @since 1.11
  */
-public class TestAdaptiveMonitoringBridge {
+public class TestAdaptiveMonitoringKDBwithoutUpdateComponent {
 
 	private ServiceContainer kdb;
 	private IServiceConnector connector;
-	private int recordCount; // default initialization is 0
-	List<String> opList;
 
-	public TestAdaptiveMonitoringBridge() {
+	// private List<String> opList;
+
+	public TestAdaptiveMonitoringKDBwithoutUpdateComponent() {
 		// empty constructor
 	}
 
 	@Test
 	public void testAdaptiveMonitoringKDB() throws ConnectorDataTransmissionException, IOException { // NOPMD
+
+		final Deque<Integer> recordReceiveOrder = this.initializeRecordReceiveOrder();
+
 		final TCPClientForKDB client = new TCPClientForKDB(ConfigurationParameters.TCP_SINGLE_PORT);
-		final TCPClientForKDB client2 = new TCPClientForKDB(ConfigurationParameters.TCP_SINGLE_PORT);
-		// Three client Threads
-		// FIRST RUN should get cache misses on all ProbeActivation-Checks (Three different OpSignatures)
-		// SECOND RUN should not have any cache misses due to the local cache update from FIRST RUN
-		// THIRD RUN test activateProbe and deactivateProbe
+		// Two client Threads
+		// FIRST RUN should get cache misses on all ProbeActivation-Checks on probe-side (Three different OpSignatures = 3 Cache-Misses)
+		// SECOND RUN should not have any cache miss due to the local cache update from FIRST RUN
+		// With this Test it is guaranteed, that the signature-cache mechanism on probe-side and the probe-activation-check on KDB-side
+		// is working correctly
 
 		final Thread clientThread = new Thread(client, "T1");
 		final Thread clientThread2 = new Thread(client, "T2");
-		final Thread clientThread3 = new Thread(client2, "T3");
 
 		// configuration of the used connector and monitoring controller
 		final Configuration configuration = ConfigurationFactory.createSingletonConfiguration();
@@ -72,31 +78,34 @@ public class TestAdaptiveMonitoringBridge {
 
 		final Configuration mconfig = ConfigurationFactory.createDefaultConfiguration();
 		mconfig.setProperty(ConfigurationFactory.ADAPTIVE_MONITORING_ENABLED, "true");
-		mconfig.setProperty(ConfigurationFactory.ADAPTIVE_MONITORING_CONFIG_FILE_UPDATE, "true");
-		// TCPSingleServerConnector
+
+		// INIT
 		this.connector = new TCPSingleServerConnector(configuration, this.createLookupEntityMap());
+		this.kdb = new ServiceContainer(mconfig, this.connector, false);
+
+		// SetPatternList
+		final List<String> patternList = new LinkedList<String>();
+		patternList.add("+" + ConfigurationParameters.TEST_OPERATION_SIGNATURE); // activated
+		patternList.add("+" + ConfigurationParameters.TEST_OPERATION_SIGNATURE_2); // activated
+		patternList.add("+" + ConfigurationParameters.TEST_OPERATION_SIGNATURE_3); // activated
+		this.kdb.getKiekerMonitoringController().setProbePatternList(patternList);
 
 		// FIRST RUN ----------------------------
 		clientThread.start();
-		this.kdb = new ServiceContainer(mconfig, this.connector, false);
 		this.kdb.run();
 
+		Assert.assertTrue("Unexpected order of records. ", recordReceiveOrder.toString().equals(this.kdb.getRecordOrder().toString()));
 		Assert.assertTrue("Unexpected amount of cache misses. Should have been " + this.kdb.getCacheMisses(), this.kdb.getCacheMisses() == 3);
+
+		this.kdb.setRecordOrder(); // deletes the received record Order in KDB
+		this.kdb.setCacheMisses(); // deletes the Cache-Misses
 
 		// SECOND RUN ----------------------------
 		clientThread2.start();
-		this.kdb = new ServiceContainer(ConfigurationFactory.createDefaultConfiguration(), this.connector, false); // reset ServiceContainer
 		this.kdb.run();
 
-		Assert.assertTrue("Unexpected, should have been 0 cache misses", this.kdb.getCacheMisses() == 0);
-
-		// THIRD RUN ----------------------------
-
-		// clientThread3.start(); // new client object
-		// this.kdb = new ServiceContainer(ConfigurationFactory.createDefaultConfiguration(), this.connector, false); // reset ServiceContainer
-		// this.kdb.deactivateProbe(ConfigurationParameters.TEST_OPERATION_SIGNATURE); // not sure if it works like this
-		// this.kdb.run();
-		// System.out.println(this.kdb.getRecordCount());
+		Assert.assertTrue("Unexpected order of records. ", recordReceiveOrder.toString().equals(this.kdb.getRecordOrder().toString()));
+		Assert.assertTrue("Unexpected amount of cache misses. Should have been 0 but were" + this.kdb.getCacheMisses(), (this.kdb.getCacheMisses()) == 0);
 
 	}
 
@@ -108,7 +117,23 @@ public class TestAdaptiveMonitoringBridge {
 		return ServiceConnectorFactory.createLookupEntityMap(map);
 	}
 
-	public int getRecordCount() {
-		return this.recordCount;
+	public Deque<Integer> initializeRecordReceiveOrder() {
+
+		final Deque<Integer> recordReceiveOrderBeforeUpdate = new LinkedList<Integer>();
+		recordReceiveOrderBeforeUpdate.add(0);
+		recordReceiveOrderBeforeUpdate.add(1);
+		recordReceiveOrderBeforeUpdate.add(2);
+		recordReceiveOrderBeforeUpdate.add(3);
+		recordReceiveOrderBeforeUpdate.add(4);
+		recordReceiveOrderBeforeUpdate.add(5);
+		recordReceiveOrderBeforeUpdate.add(6);
+		recordReceiveOrderBeforeUpdate.add(7);
+		recordReceiveOrderBeforeUpdate.add(8);
+		recordReceiveOrderBeforeUpdate.add(9);
+		recordReceiveOrderBeforeUpdate.add(10);
+		recordReceiveOrderBeforeUpdate.add(11);
+
+		return recordReceiveOrderBeforeUpdate;
 	}
+
 }

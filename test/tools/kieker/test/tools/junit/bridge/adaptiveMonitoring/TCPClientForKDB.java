@@ -67,9 +67,10 @@ public class TCPClientForKDB implements Runnable {
 					this.opList.add(ConfigurationParameters.TEST_OPERATION_SIGNATURE_2);
 					this.opList.add(ConfigurationParameters.TEST_OPERATION_SIGNATURE_3);
 
-					for (int i = 0; i < 3; i++) {
-						final String opSignature = this.opList.get(i);
-						if (this.isProbeActivated(this.opList.get(i))) {
+					// Try to send 12 records to KDB depending on its activation state
+					for (int i = 0; i < 12; i++) {
+						final String opSignature = this.opList.get(i % 3);
+						if (this.isProbeActivated(opSignature)) {
 							this.outToClient.writeInt(ConfigurationParameters.TEST_RECORD_ID);
 							this.outToClient.writeInt(opSignature.length());
 							this.outToClient.writeBytes(opSignature);
@@ -107,12 +108,12 @@ public class TCPClientForKDB implements Runnable {
 		}
 	}
 
+	// On Cache-Miss it sends a signature activation request to the KDB
 	public boolean isProbeActivated(final String signature) throws IOException, InterruptedException {
 
 		final Boolean active = this.signatureCache.get(signature);
 
 		if (null == active) {
-
 			this.outToClient.writeInt(-ConfigurationParameters.TEST_RECORD_ID);
 			this.outToClient.writeInt(signature.length());
 			this.outToClient.writeBytes(signature);
@@ -131,4 +132,11 @@ public class TCPClientForKDB implements Runnable {
 		}
 	}
 
+	// Method to update the local signature-cache after receiving update from KDB, method triggered by TcpClientUpdateForKDB
+	public void updateSignatureCache(final String signature, final int activated) {
+		final boolean signActivated = (activated == 1) ? true : false;
+
+		this.signatureCache.replace(signature, signActivated);
+
+	}
 }

@@ -29,6 +29,7 @@ import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
@@ -67,8 +68,11 @@ public class ProbeController extends AbstractController implements IProbeControl
 	private final int boundedCacheBehaviour;
 	private final ConfigFileReader configFileReader;
 
-	private final ConcurrentMap<String, Boolean> signatureCache;
+	private ConcurrentMap<String, Boolean> signatureCache;
 	private final List<PatternEntry> patternList = new ArrayList<PatternEntry>(); // only accessed synchronized
+
+	private ConcurrentMap<String, Boolean> signatureToUpdate;
+	private final Object lockObject = new Object(); // Object for the wait()-notify() relation between Update-Server-Component and ProbeController
 
 	/**
 	 * Creates a new instance of this class using the given configuration to initialize the class.
@@ -322,8 +326,13 @@ public class ProbeController extends AbstractController implements IProbeControl
 			return false;
 		}
 		synchronized (this) {
-			// we must always clear the cache!
-			this.signatureCache.clear();
+
+			final ConcurrentMap<String, Boolean> oldSignatureCache = this.signatureCache;
+
+			// this.signatureCache should be initialized like in constructor
+			// That code passage from the constructor should be in a new method, which could be called here for init
+			this.signatureCache = new ConcurrentHashMap<String, Boolean>();
+
 			final Pattern pattern;
 			try {
 				pattern = PatternParser.parseToPattern(strPattern);
@@ -334,6 +343,51 @@ public class ProbeController extends AbstractController implements IProbeControl
 			this.patternList.add(new PatternEntry(strPattern, pattern, activated));
 			if (this.configFileUpdate) {
 				this.updatePatternFile();
+			}
+
+			// process of making a delta list for the Update-Server-Component as illustrated in activity diagram on paper
+			// Calculation of new Cache -> OldSignatureCache values compared to updated patternList
+			Iterator<String> oldSignatureCacheIterator = oldSignatureCache.keySet().iterator();
+			ListIterator<PatternEntry> patternListIterator;
+			int latestEntries;
+			while (oldSignatureCacheIterator.hasNext()) {
+				final String signature = oldSignatureCacheIterator.next();
+				patternListIterator = this.patternList.listIterator(this.patternList.size());
+				// int latestEntries used as additional check variable because the patternlist in his current declaration keeps all entries, also the old ones
+				// solution would be to take another List instead of the current ArrayList. It should have functions like replace, which update entries if possible
+				latestEntries = oldSignatureCache.size();
+				while (patternListIterator.hasPrevious() && (latestEntries != 0)) {
+					final PatternEntry patternEntry = patternListIterator.previous();
+					if (patternEntry.getPattern().matcher(signature).matches() && (oldSignatureCache.get(signature) != patternEntry.isActivated())) {
+						this.signatureCache.put(signature, patternEntry.isActivated());
+					}
+					latestEntries--;
+				}
+				if (!this.signatureCache.containsKey(signature)) {
+					this.signatureCache.put(signature, oldSignatureCache.get(signature));
+				}
+			}
+
+			// Calculation of diff -> Update-Signature-Cache for the Update-Server-Component
+			this.signatureToUpdate = new ConcurrentHashMap<String, Boolean>();
+
+			oldSignatureCacheIterator = oldSignatureCache.keySet().iterator();
+			Iterator<String> signatureCacheIterator;
+
+			while (oldSignatureCacheIterator.hasNext()) {
+				final String signature = oldSignatureCacheIterator.next();
+				signatureCacheIterator = this.signatureCache.keySet().iterator();
+				while (signatureCacheIterator.hasNext()) {
+					final String signature2 = signatureCacheIterator.next();
+					if (signature.equals(signature2) && (oldSignatureCache.get(signature) != this.signatureCache.get(signature2))) {
+						this.signatureToUpdate.put(signature, this.signatureCache.get(signature2));
+					}
+				}
+			}
+
+			// notify Update-Server-Component
+			synchronized (this.lockObject) {
+				this.lockObject.notify();
 			}
 		}
 		return true;
@@ -363,6 +417,16 @@ public class ProbeController extends AbstractController implements IProbeControl
 		}
 		this.configFileReader.lastModifiedTimestamp = System.currentTimeMillis();
 		LOG.info("Updating Adaptive Monitoring config file succeeded.");
+	}
+
+	@Override
+	public ConcurrentMap<String, Boolean> getSignatureToUpdate() {
+		return this.signatureToUpdate;
+	}
+
+	@Override
+	public Object getLockObject() {
+		return this.lockObject;
 	}
 
 	/**

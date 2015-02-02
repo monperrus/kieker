@@ -17,6 +17,7 @@
 package kieker.monitoring.core.controller;
 
 import java.util.List;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
 import kieker.common.configuration.Configuration;
@@ -336,5 +337,15 @@ public final class MonitoringController extends AbstractController implements IM
 	 */
 	private static final class LazyHolder { // NOCS
 		static final IMonitoringController INSTANCE = MonitoringController.createInstance(ConfigurationFactory.createSingletonConfiguration()); // NOPMD package
+	}
+
+	@Override
+	public Object getLockObject() {
+		return this.probeController.getLockObject();
+	}
+
+	@Override
+	public ConcurrentMap<String, Boolean> getSignatureToUpdate() {
+		return this.probeController.getSignatureToUpdate();
 	}
 }

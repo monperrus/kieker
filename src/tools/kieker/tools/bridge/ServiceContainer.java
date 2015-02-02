@@ -18,10 +18,13 @@ package kieker.tools.bridge;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import kieker.common.configuration.Configuration;
 import kieker.common.record.IMonitoringRecord;
+import kieker.common.record.controlflow.OperationExecutionRecord;
 import kieker.monitoring.core.controller.IMonitoringController;
 import kieker.monitoring.core.controller.MonitoringController;
 import kieker.tools.bridge.connector.ConnectorDataTransmissionException;
@@ -55,7 +58,8 @@ public class ServiceContainer {
 
 	private volatile boolean respawn;
 	private volatile long listenerUpdateInterval = DEFAULT_LISTENER_UPDATE_INTERVAL;
-	private int cacheMisses;
+	private int cacheMisses; // only used for JUnit test
+	private final Deque<Integer> recordOrder = new LinkedList<Integer>(); // only used for JUnit test
 
 	/**
 	 * @param configuration
@@ -87,12 +91,12 @@ public class ServiceContainer {
 				try {
 					final IMonitoringRecord rc = this.service.deserializeNextRecord();
 					if (rc instanceof SignatureActivationCheckRecord) {
-						System.out.println("Activation Request");
 						final boolean enabled = this.kiekerMonitoringController.isProbeActivated(((SignatureActivationCheckRecord) rc).getOperationSignature());
 						this.service.deliverSignatureActivationStatus(enabled);
-						this.cacheMisses++;
+						this.cacheMisses++; // only for JUnit test
 					} else {
-						System.out.println("No Cache Miss");
+						final OperationExecutionRecord r = (OperationExecutionRecord) rc; // only for JUnit test
+						this.recordOrder.add(r.getEoi()); // only for JUnit test
 						this.kiekerMonitoringController.newMonitoringRecord(rc);
 						if ((this.kiekerMonitoringController.getNumberOfInserts() % this.listenerUpdateInterval) == 0) {
 							this.updateState(this.listenerUpdateInterval + " records received.");
@@ -164,8 +168,24 @@ public class ServiceContainer {
 		return this.respawn;
 	}
 
-	public int getCacheMisses() {
+	public IMonitoringController getKiekerMonitoringController() {
+		return this.kiekerMonitoringController;
+	}
+
+	public void setRecordOrder() {// only used for JUnit test
+		this.recordOrder.clear();
+	}
+
+	public Deque<Integer> getRecordOrder() {// only used for JUnit test
+		return this.recordOrder;
+	}
+
+	public int getCacheMisses() { // only used for JUnit test
 		return this.cacheMisses;
+	}
+
+	public void setCacheMisses() { // only used for JUnit test
+		this.cacheMisses = 0;
 	}
 
 	public boolean activateProbe(final String pattern) {

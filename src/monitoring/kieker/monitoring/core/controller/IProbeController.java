@@ -17,6 +17,7 @@
 package kieker.monitoring.core.controller;
 
 import java.util.List;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * @author Jan Waller
@@ -84,4 +85,8 @@ public interface IProbeController {
 	 * @since 1.6
 	 */
 	public List<String> getProbePatternList();
+
+	public ConcurrentMap<String, Boolean> getSignatureToUpdate();
+
+	public Object getLockObject();
 }

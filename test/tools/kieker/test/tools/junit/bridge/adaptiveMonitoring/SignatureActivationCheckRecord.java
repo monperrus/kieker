@@ -24,6 +24,8 @@ import kieker.common.record.IMonitoringRecord;
 import kieker.common.util.registry.IRegistry;
 
 /**
+ * Record indicating a Probe-Activation request.
+ * 
  * @author Micky Singh Multani
  * 
  * @since 1.11
