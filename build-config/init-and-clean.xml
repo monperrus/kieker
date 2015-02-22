@@ -128,6 +128,12 @@
 		</path>
 
 		<path id="kieker.tools-compile-classpath">
+			<fileset dir="${bin.dir}/dev/jnbridge/">
+				<include name="bcel-5.1-jnbridge.jar" />
+				<include name="jnbcore.jar" />
+				<include name="log4j-core.jar" />
+				<include name="log4j.jar" />
+			</fileset>
 			<fileset dir="${lib.dir}">
 				<include name="commons-cli-*.jar" />
 				<include name="jgraphx-*.jar" />

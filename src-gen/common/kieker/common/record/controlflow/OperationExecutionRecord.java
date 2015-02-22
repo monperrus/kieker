@@ -39,7 +39,7 @@ public class OperationExecutionRecord extends AbstractMonitoringRecord implement
 			+ TYPE_SIZE_STRING // OperationExecutionRecord.hostname
 			+ TYPE_SIZE_INT // OperationExecutionRecord.eoi
 			+ TYPE_SIZE_INT // OperationExecutionRecord.ess
-	;
+			;
 	private static final long serialVersionUID = -4883357436134811919L;
 
 	public static final Class<?>[] TYPES = {
@@ -107,8 +107,8 @@ public class OperationExecutionRecord extends AbstractMonitoringRecord implement
 		this.tin = tin;
 		this.tout = tout;
 		this.hostname = hostname == null ? NO_HOSTNAME : hostname;
-		this.eoi = EOI;
-		this.ess = ESS;
+		this.eoi = eoi;
+		this.ess = ess;
 	}
 
 	/**
@@ -176,14 +176,14 @@ public class OperationExecutionRecord extends AbstractMonitoringRecord implement
 	@Override
 	public Object[] toArray() {
 		return new Object[] {
-			this.getOperationSignature(),
-			this.getSessionId(),
-			this.getTraceId(),
-			this.getTin(),
-			this.getTout(),
-			this.getHostname(),
-			this.getEoi(),
-			this.getEss()
+				this.getOperationSignature(),
+				this.getSessionId(),
+				this.getTraceId(),
+				this.getTin(),
+				this.getTout(),
+				this.getHostname(),
+				this.getEoi(),
+				this.getEss()
 		};
 	}
 

@@ -13,11 +13,16 @@
 	
 	<!-- run JNBridge -->
 	<target name="generate-jnbridge" depends="-init,build-kieker.main" description="JNBridge integration.">
-		<exec executable="${bin.dir}/dev/jnbridge/jnbridge-core">
-			<arg value="first argument"/>
-			<arg value="second argument"/>
-			<arg value="${dist.dir}/${dist.kieker.main.jar}"/><!--  where the lib is located to be processed by JNbridge -->
-		</exec>
+		<!-- <java classname="com.jnbridge.jnbcore.JNBMain">
+			<classpath>
+				<fileset dir="${bin.dir}/dev/jnbridge/">
+					<include name="log4j-core.jar" />
+					<include name="log4j.jar" />
+					<include name="bcel-5.1-jnbridge.jar" />
+					<include name="jnbcore.jar"/>
+				</fileset>
+			</classpath>
+		</java> -->
 	</target>
 	
 	<!-- Build kieker.common -->
@@ -48,6 +53,8 @@
 					<include name="lib/org.eclipse.xtext.common.types_*.jar"/>
 					<include name="lib/org.eclipse.emf.mwe.utils_*.jar"/>
 					<include name="lib/org.eclipse.xtext.common.types.ui_*.jar"/>
+					<include name="jnbridge/bcel-5.1-jnbridge.jar"/>
+					<include name="jnbridge/jnbcore.jar"/>
 				</fileset>
 			</classpath>
 			<arg line="-r .. -a 'Kieker Build' -d src-gen/tools -s model/tools/records -l java -l java.factory -n kieker -p Kieker -v 1.10"/>	

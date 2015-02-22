@@ -468,7 +468,7 @@
 			<zipfileset file="${lib.dir}/aspectjweaver-*.jar"
 						prefix="${kieker.dist.name}/${src.example.monitoring.spring.dir}/lib" />
 			<zipfileset file="${lib.dir}/commons-logging-*.jar"
-						prefix="${kieker.dist.name}/${src.example.monitoring.spring.dir}/lib" />						
+						prefix="${kieker.dist.name}/${src.example.monitoring.spring.dir}/lib" />
 		</zip>
 	</target>
 

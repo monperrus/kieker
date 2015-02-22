@@ -16,6 +16,10 @@
 
 package kieker.tools.bridge.connector.jnbridge;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentMap;
 
 import com.jnbridge.jnbcore.server.ServerException;
@@ -35,22 +39,56 @@ import kieker.tools.bridge.connector.ConnectorEndOfDataException;
  */
 public class JNBridgeConnector extends AbstractConnector {
 
-	private JNBridgeMonitoringController controller;
+	private final JNBridgeMonitoringController controller;
+	private final Properties props;
 
+	/**
+	 * Constructor
+	 * 
+	 * @param configuration
+	 *            , lookupEnityMap
+	 */
 	public JNBridgeConnector(final Configuration configuration, final ConcurrentMap<Integer, LookupEntity> lookupEntityMap) {
 		super(configuration, lookupEntityMap);
+		this.props = new Properties();
+		this.controller = JNBridgeMonitoringController.getInstance();
 	}
 
+	/**
+	 * Initialize the Conntroller
+	 * 
+	 * @throws ConnectorDataTransmissionException
+	 */
 	@Override
 	public void initialize() throws ConnectorDataTransmissionException {
+
 		try {
-			com.jnbridge.jnbcore.JNBMain.start("C:/Program Files/JNBridge/JNBridgePro v5.1 x64/jnbcore/jnbcore_tcp.properties");
-			this.controller = new JNBridgeMonitoringController();
+			try {
+				this.loadProps();
+			} catch (final IOException e) {
+				//
+			}
+			// this.props.setProperty("JNBCore", "/Kieker/resources/jnbcore_tcp.properties");
+			com.jnbridge.jnbcore.JNBMain.start(this.props);
+
 		} catch (final ServerException e) {
 			throw new ConnectorDataTransmissionException(e.getMessage(), e);
 		}
 	}
 
+	/**
+	 * Load the JNBridge Properties
+	 */
+	public void loadProps() throws IOException {
+		// final InputStream in = this.getClass().getResourceAsStream("C:\\kieker\\resources\\jnbcore_tcp.properties");
+		// this.props.load(in);
+		final InputStream input = new FileInputStream("/Kieker/resources/jnbcore_tcp.properties");
+		this.props.load(input);
+	}
+
+	/**
+	 * Close
+	 */
 	@Override
 	public void close() throws ConnectorDataTransmissionException {
 		try {
@@ -60,8 +98,15 @@ public class JNBridgeConnector extends AbstractConnector {
 		}
 	}
 
+	/**
+	 * DeserializeNextRecord
+	 */
 	@Override
 	public IMonitoringRecord deserializeNextRecord() throws ConnectorDataTransmissionException, ConnectorEndOfDataException {
-		return this.controller.getQueue().poll();
+		try {
+			return this.controller.getQueue().take();
+		} catch (final InterruptedException e) {
+			throw new ConnectorDataTransmissionException(e.getMessage(), e);
+		}
 	}
 }

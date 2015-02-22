@@ -35,9 +35,9 @@ import kieker.test.common.junit.AbstractKiekerTest;
 /**
  * Class for all connector tests providing three methods for initialization,
  * record processing and connector termination.
- * 
+ *
  * @author Reiner Jung, Pascale Brandt
- * 
+ *
  * @since 1.8
  */
 public abstract class AbstractConnectorTest extends AbstractKiekerTest {
@@ -64,7 +64,7 @@ public abstract class AbstractConnectorTest extends AbstractKiekerTest {
 
 	/**
 	 * Create the test lookup entity map.
-	 * 
+	 *
 	 * @return a lookup entity map
 	 * @throws ConnectorDataTransmissionException
 	 *             if record lookup fails
@@ -90,7 +90,7 @@ public abstract class AbstractConnectorTest extends AbstractKiekerTest {
 
 	/**
 	 * Close a service connector and trigger a failure on errors.
-	 * 
+	 *
 	 * @param numberOfRecords
 	 *            number of expected records
 	 */
@@ -108,7 +108,7 @@ public abstract class AbstractConnectorTest extends AbstractKiekerTest {
 
 	/**
 	 * Read number of records from the input stream and trigger assertion errors if necessary.
-	 * 
+	 *
 	 * @param numberOfRecords
 	 *            number of expected records to receive
 	 * @param honorOrderId

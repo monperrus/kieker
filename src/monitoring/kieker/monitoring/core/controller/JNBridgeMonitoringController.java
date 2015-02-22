@@ -16,8 +16,8 @@
 
 package kieker.monitoring.core.controller;
 
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import kieker.common.configuration.Configuration;
 import kieker.common.record.IMonitoringRecord;
@@ -30,30 +30,45 @@ import kieker.monitoring.core.configuration.ConfigurationFactory;
  */
 public class JNBridgeMonitoringController {
 
-	private final Queue<IMonitoringRecord> recordQueue;
+	private final BlockingQueue<IMonitoringRecord> recordQueue;
 	private final long offset;
 
+	/**
+	 * Constructor
+	 */
 	public JNBridgeMonitoringController() {
-		this.recordQueue = new LinkedList<IMonitoringRecord>();
+		this.recordQueue = new LinkedBlockingQueue<IMonitoringRecord>();
 		this.offset = System.nanoTime();
 	}
 
 	/**
-	 *
+	 * Add a new record into the Nonblocking-Queue
+	 * 
+	 * @param record
 	 */
 	public final boolean newMonitoringRecord(final IMonitoringRecord record) {
 		return this.recordQueue.add(record);
 	}
 
 	/**
-	 *
+	 * Get the time
 	 */
 	public final long getTime() {
 		return System.nanoTime() - this.offset;
 	}
 
-	public final Queue<IMonitoringRecord> getQueue() {
+	/**
+	 * Get the Queue
+	 */
+	public final BlockingQueue<IMonitoringRecord> getQueue() {
 		return this.recordQueue;
+	}
+
+	/**
+	 * Create an instance from JNBridgeMonitoringController
+	 */
+	public static JNBridgeMonitoringController createInstance(final Configuration createSingletonConfiguration) {
+		return new JNBridgeMonitoringController();
 	}
 
 	// GET SINGLETON INSTANCE
@@ -70,7 +85,4 @@ public class JNBridgeMonitoringController {
 		// package
 	}
 
-	public static JNBridgeMonitoringController createInstance(final Configuration createSingletonConfiguration) {
-		return new JNBridgeMonitoringController();
-	}
 }
