@@ -116,17 +116,6 @@ public abstract class AbstractAsyncThread extends Thread {
 						}
 						break; // while
 					} else {
-						synchronized (this) {
-							if (!this.finished && (this.shutdownLatch != null)) {
-								if (LOG.isDebugEnabled()) {
-									LOG.debug("Terminating writer thread, " + writeQueueLocal.size() + " entries remaining");
-								}
-								this.cleanup();
-								this.shutdownLatch.countDown();
-								this.finished = true;
-								break; // while
-							}
-						}
 						this.consume(monitoringRecord);
 					}
 				} catch (final InterruptedException ex) {
