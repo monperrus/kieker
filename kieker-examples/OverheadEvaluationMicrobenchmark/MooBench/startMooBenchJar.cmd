@@ -21,7 +21,7 @@ set JAR=-jar MooBench.jar -a mooBench.monitoredApplication.MonitoredClassSimple
 set TOTALCALLS=2000000
 set METHODTIME=0
 set THREADS=1
-set RECURSIONDEPTH=10
+set RECURSIONDEPTH=100
 set OUTPUT_FILENAME=%TOTALCALLS%-%METHODTIME%-%THREADS%-%RECURSIONDEPTH%
 set MOREPARAMS=--quickstart ^
 	-r kieker.Logger
