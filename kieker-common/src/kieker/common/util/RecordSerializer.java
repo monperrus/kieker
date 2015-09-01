@@ -25,7 +25,7 @@ import kieker.common.util.registry.ILookup;
 /**
  * @author Christian Wulf
  *
- * @since 1.11
+ * @since 1.12
  */
 public final class RecordSerializer {
 
@@ -34,6 +34,8 @@ public final class RecordSerializer {
 	public RecordSerializer(final ILookup<String> stringRegistry) {
 		super();
 		this.stringRegistry = stringRegistry;
+		// TODO not possible so far, since id must be non-negative
+		// this.stringRegistry.set(RegistryRecord.class.getName(), RegistryRecord.CLASS_ID);
 	}
 
 	public final void serialize(final IMonitoringRecord record, final ByteBuffer buffer) {
@@ -43,14 +45,11 @@ public final class RecordSerializer {
 		if (record instanceof RegistryRecord) {
 			recordClassId = RegistryRecord.CLASS_ID;
 		} else {
-			// recordClassId = monitoringController.getUniqueIdForString(record.getClass().getName());
 			recordClassId = this.stringRegistry.get(record.getClass().getName());
-			// getUniqueIdForString delegates to stringRegistry.get(String)
 		}
 
 		buffer.putInt(recordClassId);
 		buffer.putLong(record.getLoggingTimestamp());
 		record.writeBytes(buffer, this.stringRegistry);
-		// System.out.println("SERIALIZED: " + record.getClass().getName());
 	}
 }
