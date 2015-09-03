@@ -22,6 +22,7 @@ import org.junit.Test;
 
 import kieker.common.record.IMonitoringRecord;
 import kieker.common.record.factory.IRecordFactory;
+import kieker.common.record.factory.IRecordFactoryResolver;
 import kieker.common.record.factory.RecordFactoryResolver;
 import kieker.common.record.flow.trace.operation.AfterOperationEvent;
 import kieker.common.record.flow.trace.operation.AfterOperationEventFactory;
@@ -36,7 +37,7 @@ import kieker.test.common.util.record.factory.TestRecord;
  */
 public class RecordFactoryResolverTest extends AbstractKiekerTest {
 
-	private RecordFactoryResolver recordFactoryResolver;
+	private IRecordFactoryResolver recordFactoryResolver;
 
 	public RecordFactoryResolverTest() {
 		// Nothing to do

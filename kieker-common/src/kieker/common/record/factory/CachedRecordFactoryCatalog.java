@@ -29,25 +29,19 @@ import kieker.common.record.factory.old.RecordFactoryWrapper;
  */
 public final class CachedRecordFactoryCatalog {
 
-	private static final CachedRecordFactoryCatalog INSTANCE = new CachedRecordFactoryCatalog(new RecordFactoryResolver());
-
 	private final ConcurrentMap<String, IRecordFactory<? extends IMonitoringRecord>> cachedRecordFactories;
-	private final RecordFactoryResolver recordFactoryResolver;
+	private final IRecordFactoryResolver recordFactoryResolver;
 
+	/**
+	 * Uses the default RecordFactoryResolver.
+	 */
 	public CachedRecordFactoryCatalog() {
 		this(new RecordFactoryResolver());
 	}
 
-	CachedRecordFactoryCatalog(final RecordFactoryResolver recordFactoryResolver) {
+	public CachedRecordFactoryCatalog(final IRecordFactoryResolver recordFactoryResolver) {
 		this.cachedRecordFactories = new ConcurrentHashMap<String, IRecordFactory<? extends IMonitoringRecord>>();
 		this.recordFactoryResolver = recordFactoryResolver;
-	}
-
-	/**
-	 * Returns the only instance of this class.
-	 */
-	public static CachedRecordFactoryCatalog getInstance() {
-		return INSTANCE;
 	}
 
 	/**

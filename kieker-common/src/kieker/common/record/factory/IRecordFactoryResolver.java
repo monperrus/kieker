@@ -17,45 +17,19 @@
 package kieker.common.record.factory;
 
 import kieker.common.record.IMonitoringRecord;
-import kieker.common.util.classpath.ClassForNameResolver;
 
 /**
  * @author Christian Wulf
  *
- * @since 1.11
+ * @since 1.12
  */
-@SuppressWarnings("rawtypes")
-public class RecordFactoryResolver implements IRecordFactoryResolver {
-
-	private final ClassForNameResolver<IRecordFactory> classForNameResolver;
-
-	public RecordFactoryResolver() {
-		this.classForNameResolver = new ClassForNameResolver<IRecordFactory>(IRecordFactory.class);
-	}
-
-	private String buildRecordFactoryClassName(final String recordClassName) {
-		return recordClassName + "Factory";
-	}
+public interface IRecordFactoryResolver {
 
 	/**
 	 * @param recordClassName
 	 * @return a new instance of the record factory belonging to the given <code>recordClassName</code> or <code>null</code> if such a record factory could not be
 	 *         found or instantiated
 	 */
-	@Override
-	@SuppressWarnings("unchecked")
-	public IRecordFactory<? extends IMonitoringRecord> get(final String recordClassName) {
-		final String recordFactoryClassName = this.buildRecordFactoryClassName(recordClassName);
+	public abstract IRecordFactory<? extends IMonitoringRecord> get(String recordClassName);
 
-		try {
-			final Class<? extends IRecordFactory> recordFactoryClass = this.classForNameResolver.classForName(recordFactoryClassName);
-			return recordFactoryClass.newInstance();
-		} catch (final ClassNotFoundException e) {
-			return null;
-		} catch (final InstantiationException e) {
-			return null;
-		} catch (final IllegalAccessException e) {
-			return null;
-		}
-	}
 }

@@ -25,6 +25,7 @@ import kieker.analysis.plugin.reader.AbstractReaderPlugin;
 import kieker.common.configuration.Configuration;
 import kieker.common.logging.Log;
 import kieker.common.record.IMonitoringRecord;
+import kieker.common.record.factory.CachedRecordFactoryCatalog;
 import kieker.common.record.misc.RegistryRecord;
 import kieker.common.util.registry.ILookup;
 import kieker.common.util.registry.Lookup;
@@ -73,24 +74,24 @@ public class NewTcpReader extends AbstractReaderPlugin {
 		this.port1 = this.configuration.getIntProperty(CONFIG_PROPERTY_NAME_PORT1);
 		this.port2 = this.configuration.getIntProperty(CONFIG_PROPERTY_NAME_PORT2);
 
-		this.tcpMonitoringRecordReader = createTcpMonitoringRecordReader(port1, MESSAGE_BUFFER_SIZE, log, stringRegistry);
+		this.tcpMonitoringRecordReader = this.createTcpMonitoringRecordReader(this.port1, MESSAGE_BUFFER_SIZE, this.log, this.stringRegistry);
 
-		this.tcpStringRecordReader = new AbstractTcpReader(port2, MESSAGE_BUFFER_SIZE, log) {
+		this.tcpStringRecordReader = new AbstractTcpReader(this.port2, MESSAGE_BUFFER_SIZE, this.log) {
 			@Override
 			protected boolean onBufferReceived(final ByteBuffer buffer) {
-				RegistryRecord.registerRecordInRegistry(buffer, stringRegistry);
+				RegistryRecord.registerRecordInRegistry(buffer, NewTcpReader.this.stringRegistry);
 				return true;
 			}
 		};
 	}
 
 	protected AbstractRecordTcpReader createTcpMonitoringRecordReader(final int port, final int bufferCapacity, final Log logger, final ILookup<String> registry) {
-		return new AbstractRecordTcpReader(port, bufferCapacity, logger, registry) {
+		return new AbstractRecordTcpReader(port, bufferCapacity, logger, registry, new CachedRecordFactoryCatalog()) {
 			@Override
 			protected void onRecordReceived(final IMonitoringRecord record) {
-				boolean success = NewTcpReader.this.deliver(OUTPUT_PORT_NAME_RECORDS, record);
+				final boolean success = NewTcpReader.this.deliver(OUTPUT_PORT_NAME_RECORDS, record);
 				if (!success) {
-					logger.warn("Failed to deliver record: " + record);
+					this.logger.warn("Failed to deliver record: " + record);
 				} else {
 					// logger.debug("SENT: " + record.getClass().getSimpleName() + " -> " + record);
 				}
@@ -100,7 +101,7 @@ public class NewTcpReader extends AbstractReaderPlugin {
 
 	@Override
 	public boolean init() {
-		this.tcpStringRecordReaderThread = new Thread(tcpStringRecordReader); // BETTER move to ctor
+		this.tcpStringRecordReaderThread = new Thread(this.tcpStringRecordReader); // BETTER move to ctor
 		this.tcpStringRecordReaderThread.start();
 		return super.init();
 	}
@@ -115,7 +116,7 @@ public class NewTcpReader extends AbstractReaderPlugin {
 
 	@Override
 	public boolean read() {
-		tcpMonitoringRecordReader.run();
+		this.tcpMonitoringRecordReader.run();
 		return true;
 	}
 
@@ -129,10 +130,10 @@ public class NewTcpReader extends AbstractReaderPlugin {
 	}
 
 	public int getPort1() {
-		return port1;
+		return this.port1;
 	}
 
 	public int getPort2() {
-		return port2;
+		return this.port2;
 	}
 }

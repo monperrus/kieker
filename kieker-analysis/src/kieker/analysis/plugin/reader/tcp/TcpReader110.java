@@ -36,6 +36,7 @@ import kieker.common.logging.LogFactory;
 import kieker.common.record.IMonitoringRecord;
 import kieker.common.record.factory.CachedRecordFactoryCatalog;
 import kieker.common.record.factory.IRecordFactory;
+import kieker.common.record.factory.LegacyRecordFactoryResolver;
 import kieker.common.record.misc.RegistryRecord;
 import kieker.common.util.registry.ILookup;
 import kieker.common.util.registry.Lookup;
@@ -48,16 +49,16 @@ import kieker.common.util.registry.Lookup;
  * @since 1.8
  */
 @Plugin(description = "A reader which reads records from a TCP port",
-outputPorts = {
-		@OutputPort(name = TCPReader.OUTPUT_PORT_NAME_RECORDS, eventTypes = { IMonitoringRecord.class }, description = "Output Port of the TCPReader")
-},
-configuration = {
-		@Property(name = TCPReader.CONFIG_PROPERTY_NAME_PORT1, defaultValue = "10133",
-				description = "The first port of the server used for the TCP connection."),
-				@Property(name = TCPReader.CONFIG_PROPERTY_NAME_PORT2, defaultValue = "10134",
-				description = "The second port of the server used for the TCP connection.")
-})
-public final class TCPReader extends AbstractReaderPlugin {
+		outputPorts = {
+			@OutputPort(name = TcpReader110.OUTPUT_PORT_NAME_RECORDS, eventTypes = { IMonitoringRecord.class }, description = "Output Port of the TCPReader")
+		},
+		configuration = {
+			@Property(name = TcpReader110.CONFIG_PROPERTY_NAME_PORT1, defaultValue = "10133",
+					description = "The first port of the server used for the TCP connection."),
+			@Property(name = TcpReader110.CONFIG_PROPERTY_NAME_PORT2, defaultValue = "10134",
+					description = "The second port of the server used for the TCP connection.")
+		})
+public final class TcpReader110 extends AbstractReaderPlugin {
 
 	/** The name of the output port delivering the received records. */
 	public static final String OUTPUT_PORT_NAME_RECORDS = "monitoringRecords";
@@ -70,22 +71,23 @@ public final class TCPReader extends AbstractReaderPlugin {
 	private static final int MESSAGE_BUFFER_SIZE = 65535;
 
 	private volatile Thread readerThread;
-	private volatile TCPStringReader tcpStringReader;
+	private volatile TcpStringReader110 tcpStringReader;
 	private volatile boolean terminated = false; // NOPMD
 	private final int port1;
 	private final int port2;
 	private final ILookup<String> stringRegistry = new Lookup<String>();
-	private final CachedRecordFactoryCatalog cachedRecordFactoryCatalog = new CachedRecordFactoryCatalog();
+	private final CachedRecordFactoryCatalog cachedRecordFactoryCatalog;
 
-	public TCPReader(final Configuration configuration, final IProjectContext projectContext) {
+	public TcpReader110(final Configuration configuration, final IProjectContext projectContext) {
 		super(configuration, projectContext);
 		this.port1 = this.configuration.getIntProperty(CONFIG_PROPERTY_NAME_PORT1);
 		this.port2 = this.configuration.getIntProperty(CONFIG_PROPERTY_NAME_PORT2);
+		this.cachedRecordFactoryCatalog = new CachedRecordFactoryCatalog(new LegacyRecordFactoryResolver());
 	}
 
 	@Override
 	public boolean init() {
-		this.tcpStringReader = new TCPStringReader(this.port2, this.stringRegistry);
+		this.tcpStringReader = new TcpStringReader110(this.port2, this.stringRegistry);
 		this.tcpStringReader.start();
 		return super.init();
 	}
@@ -147,7 +149,7 @@ public final class TCPReader extends AbstractReaderPlugin {
 		final int clazzId = buffer.getInt();
 		final long loggingTimestamp = buffer.getLong();
 		try { // NOCS (Nested try-catch)
-			// final IMonitoringRecord record = AbstractMonitoringRecord.createFromByteBuffer(clazzid, buffer, this.stringRegistry);
+				// final IMonitoringRecord record = AbstractMonitoringRecord.createFromByteBuffer(clazzid, buffer, this.stringRegistry);
 			final String recordClassName = this.stringRegistry.get(clazzId);
 			final IRecordFactory<? extends IMonitoringRecord> recordFactory = this.cachedRecordFactoryCatalog.get(recordClassName);
 			final IMonitoringRecord record = recordFactory.create(buffer, this.stringRegistry);
@@ -186,18 +188,18 @@ public final class TCPReader extends AbstractReaderPlugin {
  *
  * @since 1.8
  */
-class TCPStringReader extends Thread {
+class TcpStringReader110 extends Thread {
 
 	private static final int MESSAGE_BUFFER_SIZE = 65535;
 
-	private static final Log LOG = LogFactory.getLog(TCPStringReader.class);
+	private static final Log LOG = LogFactory.getLog(TcpStringReader110.class);
 
 	private final int port;
 	private final ILookup<String> stringRegistry;
 	private volatile boolean terminated = false; // NOPMD
 	private volatile Thread readerThread;
 
-	public TCPStringReader(final int port, final ILookup<String> stringRegistry) {
+	public TcpStringReader110(final int port, final ILookup<String> stringRegistry) {
 		this.port = port;
 		this.stringRegistry = stringRegistry;
 	}
