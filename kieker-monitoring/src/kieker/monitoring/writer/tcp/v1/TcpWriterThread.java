@@ -11,7 +11,7 @@ import kieker.common.logging.LogFactory;
 import kieker.common.record.AbstractMonitoringRecord;
 import kieker.common.record.IMonitoringRecord;
 import kieker.common.util.RecordSerializer;
-import kieker.common.util.registry.ILookup;
+import kieker.common.util.registry.IRegistry;
 import kieker.monitoring.core.controller.IMonitoringController;
 import kieker.monitoring.writer.AbstractAsyncThread;
 
@@ -25,7 +25,7 @@ class TcpWriterThread extends AbstractAsyncThread {
 
 	private final SocketChannel socketChannel;
 	private final ByteBuffer byteBuffer;
-	private final ILookup<String> stringRegistry;
+	private final IRegistry<String> stringRegistry;
 	private final boolean flush;
 	private final RecordSerializer recordSerializer;
 
@@ -34,7 +34,7 @@ class TcpWriterThread extends AbstractAsyncThread {
 		super(monitoringController, writeQueue);
 		this.byteBuffer = ByteBuffer.allocateDirect(bufferSize);
 		this.socketChannel = SocketChannel.open(new InetSocketAddress(hostname, port));
-		this.stringRegistry = (ILookup<String>) this.monitoringController.getStringRegistry();
+		this.stringRegistry = this.monitoringController.getStringRegistry();
 		this.flush = flush;
 		this.recordSerializer = new RecordSerializer(this.stringRegistry);
 	}

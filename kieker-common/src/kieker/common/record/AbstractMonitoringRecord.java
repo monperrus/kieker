@@ -549,9 +549,4 @@ public abstract class AbstractMonitoringRecord implements IMonitoringRecord {
 		}
 	}
 
-	@Override
-	public void registerStrings(final IRegistry<String> stringRegistry) { // NOPMD (default empty method body)
-
-	}
-
 }

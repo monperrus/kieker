@@ -21,25 +21,22 @@ import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 
 import kieker.common.util.registry.IRegistry;
-import kieker.common.util.Version;
-
-import kieker.common.record.flow.trace.operation.AbstractOperationEvent;
 
 /**
  * @author Jan Waller
- * 
+ *
  * @since 1.5
  */
-public class BeforeOperationEvent extends AbstractOperationEvent  {
+public class BeforeOperationEvent extends AbstractOperationEvent {
 	/** Descriptive definition of the serialization size of the record. */
 	public static final int SIZE = TYPE_SIZE_LONG // IEventRecord.timestamp
-			 + TYPE_SIZE_LONG // ITraceRecord.traceId
-			 + TYPE_SIZE_INT // ITraceRecord.orderIndex
-			 + TYPE_SIZE_STRING // IOperationSignature.operationSignature
-			 + TYPE_SIZE_STRING // IClassSignature.classSignature
-	;
+			+ TYPE_SIZE_LONG // ITraceRecord.traceId
+			+ TYPE_SIZE_INT // ITraceRecord.orderIndex
+			+ TYPE_SIZE_STRING // IOperationSignature.operationSignature
+			+ TYPE_SIZE_STRING // IClassSignature.classSignature
+			;
 	private static final long serialVersionUID = -3460876151242334750L;
-	
+
 	public static final Class<?>[] TYPES = {
 		long.class, // IEventRecord.timestamp
 		long.class, // ITraceRecord.traceId
@@ -47,14 +44,14 @@ public class BeforeOperationEvent extends AbstractOperationEvent  {
 		String.class, // IOperationSignature.operationSignature
 		String.class, // IClassSignature.classSignature
 	};
-	
+
 	/* user-defined constants */
 	/* default constants */
 	/* property declarations */
 
 	/**
 	 * Creates a new instance of this class using the given parameters.
-	 * 
+	 *
 	 * @param timestamp
 	 *            timestamp
 	 * @param traceId
@@ -73,17 +70,17 @@ public class BeforeOperationEvent extends AbstractOperationEvent  {
 	/**
 	 * This constructor converts the given array into a record.
 	 * It is recommended to use the array which is the result of a call to {@link #toArray()}.
-	 * 
+	 *
 	 * @param values
 	 *            The values for the record.
 	 */
 	public BeforeOperationEvent(final Object[] values) { // NOPMD (direct store of values)
 		super(values, TYPES);
 	}
-	
+
 	/**
 	 * This constructor uses the given array to initialize the fields of this record.
-	 * 
+	 *
 	 * @param values
 	 *            The values for the record.
 	 * @param valueTypes
@@ -95,10 +92,10 @@ public class BeforeOperationEvent extends AbstractOperationEvent  {
 
 	/**
 	 * This constructor converts the given array into a record.
-	 * 
+	 *
 	 * @param buffer
 	 *            The bytes for the record.
-	 * 
+	 *
 	 * @throws BufferUnderflowException
 	 *             if buffer not sufficient
 	 */
@@ -124,7 +121,7 @@ public class BeforeOperationEvent extends AbstractOperationEvent  {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void registerStrings(final IRegistry<String> stringRegistry) {	// NOPMD (generated code)
+	public void registerStrings(final IRegistry<String> stringRegistry) { // NOPMD (generated code)
 		stringRegistry.get(this.getOperationSignature());
 		stringRegistry.get(this.getClassSignature());
 	}
@@ -156,9 +153,10 @@ public class BeforeOperationEvent extends AbstractOperationEvent  {
 	public int getSize() {
 		return SIZE;
 	}
+
 	/**
 	 * {@inheritDoc}
-	 * 
+	 *
 	 * @deprecated This record uses the {@link kieker.common.record.IMonitoringRecord.Factory} mechanism. Hence, this method is not implemented.
 	 */
 	@Override
@@ -169,7 +167,7 @@ public class BeforeOperationEvent extends AbstractOperationEvent  {
 
 	/**
 	 * {@inheritDoc}
-	 * 
+	 *
 	 * @deprecated This record uses the {@link kieker.common.record.IMonitoringRecord.BinaryFactory} mechanism. Hence, this method is not implemented.
 	 */
 	@Override

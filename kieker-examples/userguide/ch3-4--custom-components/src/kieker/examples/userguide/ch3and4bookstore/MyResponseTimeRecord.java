@@ -25,6 +25,7 @@ import kieker.common.record.IMonitoringRecord;
 import kieker.common.util.registry.IRegistry;
 
 public class MyResponseTimeRecord extends AbstractMonitoringRecord implements IMonitoringRecord.Factory, IMonitoringRecord.BinaryFactory {
+
 	public static final int SIZE = (2 * TYPE_SIZE_STRING) + TYPE_SIZE_LONG;
 	public static final Class<?>[] TYPES = { String.class, String.class, long.class, };
 
@@ -75,6 +76,12 @@ public class MyResponseTimeRecord extends AbstractMonitoringRecord implements IM
 	}
 
 	@Override
+	public void registerStrings(final IRegistry<String> stringRegistry) {
+		stringRegistry.get(this.getClassName());
+		stringRegistry.get(this.getMethodName());
+	}
+
+	@Override
 	public void writeBytes(final ByteBuffer buffer, final IRegistry<String> stringRegistry) throws BufferOverflowException {
 		buffer.putInt(stringRegistry.get(this.getClassName()));
 		buffer.putInt(stringRegistry.get(this.getMethodName()));
@@ -102,4 +109,5 @@ public class MyResponseTimeRecord extends AbstractMonitoringRecord implements IM
 	public final long getResponseTimeNanos() {
 		return this.responseTimeNanos;
 	}
+
 }

@@ -77,6 +77,12 @@ public final class Tcp1ThreadReader extends AbstractReaderPlugin implements Read
 		this.createMonitoringRecordReader(serverSocketChannelFactory);
 	}
 
+	protected void createMonitoringRecordReader(final ServerSocketChannelFactory serverSocketChannelFactory) {
+		final int port = this.configuration.getIntProperty(CONFIG_PROPERTY_NAME_PORT1);
+		final int messageBufferSize = MESSAGE_BUFFER_SIZE;
+		this.monitoringRecordReader = new TcpServer(serverSocketChannelFactory, port, messageBufferSize, this, LOG);
+	}
+
 	@Override
 	public boolean read(final ByteBuffer buffer) {
 		final int clazzId = buffer.getInt();
@@ -95,24 +101,18 @@ public final class Tcp1ThreadReader extends AbstractReaderPlugin implements Read
 		RegistryRecord.registerRecordInRegistry(buffer, this.stringRegistry);
 	}
 
-	protected void createMonitoringRecordReader(final ServerSocketChannelFactory serverSocketChannelFactory) {
-		final int port = this.configuration.getIntProperty(CONFIG_PROPERTY_NAME_PORT1);
-		final int messageBufferSize = MESSAGE_BUFFER_SIZE;
-		this.monitoringRecordReader = new TcpServer(serverSocketChannelFactory, port, messageBufferSize, this, LOG);
-	}
-
 	protected void deserializeMonitoringRecord(final int clazzId, final long loggingTimestamp, final ByteBuffer buffer) {
-		try { // NOCS (Nested try-catch)
-			final String recordClassName = this.stringRegistry.get(clazzId);
+		final String recordClassName = this.stringRegistry.get(clazzId);
+		final IRecordFactory<? extends IMonitoringRecord> recordFactory = this.cachedRecordFactoryCatalog.get(recordClassName);
 
-			final IRecordFactory<? extends IMonitoringRecord> recordFactory = this.cachedRecordFactoryCatalog.get(recordClassName);
+		try {
 			final IMonitoringRecord record = recordFactory.create(buffer, this.stringRegistry);
 			record.setLoggingTimestamp(loggingTimestamp);
 
 			this.deliver(OUTPUT_PORT_NAME_RECORDS, record);
 		} catch (final RecordInstantiationException ex) {
 			// for other reasons than due to a BufferUnderflowException
-			this.log.error("Failed to create record.", ex);
+			this.log.error("Failed to create record of type " + recordClassName, ex);
 		}
 	}
 

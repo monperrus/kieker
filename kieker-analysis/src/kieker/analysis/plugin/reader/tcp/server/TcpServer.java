@@ -112,7 +112,7 @@ public class TcpServer {
 			}
 			buffer.clear();
 		} catch (final BufferUnderflowException ex) {
-			this.log.warn("Unexpected buffer underflow. Resetting and compacting buffer.", ex);
+			// this.log.warn("Unexpected buffer underflow. Resetting and compacting buffer.", ex);
 			buffer.reset();
 			buffer.compact();
 		}

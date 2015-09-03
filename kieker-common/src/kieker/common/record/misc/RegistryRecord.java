@@ -126,6 +126,14 @@ public final class RegistryRecord extends AbstractMonitoringRecord implements IM
 	 * {@inheritDoc}
 	 */
 	@Override
+	public void registerStrings(final IRegistry<String> stringRegistry) {
+		// no string attributes to register
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public void writeBytes(final ByteBuffer buffer, final IRegistry<String> stringRegistry) throws BufferOverflowException {
 		buffer.putInt(this.getId());
 		buffer.putInt(this.getString().length());
@@ -216,4 +224,5 @@ public final class RegistryRecord extends AbstractMonitoringRecord implements IM
 		}
 		stringRegistry.set(string, id);
 	}
+
 }

@@ -27,7 +27,7 @@ import kieker.common.util.registry.IRegistry;
 
 /**
  * @author Jan Waller
- * 
+ *
  * @since 1.5
  */
 public class TraceMetadata extends AbstractMonitoringRecord implements IMonitoringRecord.Factory, IMonitoringRecord.BinaryFactory, IFlowRecord {
@@ -62,7 +62,7 @@ public class TraceMetadata extends AbstractMonitoringRecord implements IMonitori
 
 	/**
 	 * Creates a new instance of this class using the given parameters.
-	 * 
+	 *
 	 * @param traceId
 	 *            The trace ID.
 	 * @param threadId
@@ -87,7 +87,7 @@ public class TraceMetadata extends AbstractMonitoringRecord implements IMonitori
 
 	/**
 	 * Creates a new instance of this class using the given parameter.
-	 * 
+	 *
 	 * @param values
 	 *            The array containing the values for the fields of this class. This should normally be the array resulting in a call to {@link #toArray()}.
 	 */
@@ -103,10 +103,10 @@ public class TraceMetadata extends AbstractMonitoringRecord implements IMonitori
 
 	/**
 	 * This constructor converts the given array into a record.
-	 * 
+	 *
 	 * @param buffer
 	 *            The bytes for the record.
-	 * 
+	 *
 	 * @throws BufferUnderflowException
 	 *             if buffer not sufficient
 	 */
@@ -131,6 +131,15 @@ public class TraceMetadata extends AbstractMonitoringRecord implements IMonitori
 	 * {@inheritDoc}
 	 */
 	@Override
+	public void registerStrings(final IRegistry<String> stringRegistry) {
+		stringRegistry.get(this.getSessionId());
+		stringRegistry.get(this.getHostname());
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public void writeBytes(final ByteBuffer buffer, final IRegistry<String> stringRegistry) throws BufferOverflowException {
 		buffer.putLong(this.getTraceId());
 		buffer.putLong(this.getThreadId());
@@ -142,7 +151,7 @@ public class TraceMetadata extends AbstractMonitoringRecord implements IMonitori
 
 	/**
 	 * {@inheritDoc}
-	 * 
+	 *
 	 * @deprecated This record uses the {@link kieker.common.record.IMonitoringRecord.Factory} mechanism. Hence, this method is not implemented.
 	 */
 	@Override
@@ -153,7 +162,7 @@ public class TraceMetadata extends AbstractMonitoringRecord implements IMonitori
 
 	/**
 	 * {@inheritDoc}
-	 * 
+	 *
 	 * @deprecated This record uses the {@link kieker.common.record.IMonitoringRecord.BinaryFactory} mechanism. Hence, this method is not implemented.
 	 */
 	@Override
@@ -205,4 +214,5 @@ public class TraceMetadata extends AbstractMonitoringRecord implements IMonitori
 	public final int getNextOrderId() {
 		return this.nextOrderId++;
 	}
+
 }

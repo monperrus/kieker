@@ -61,10 +61,14 @@ public class Tcp1ThreadWriter extends AbstractAsyncWriter {
 	}
 
 	@Override
+	// only invoked by the WriterController and only by the worker thread.
+	// hence, it does not need to be synchronized.
+	// it must not be added to the blockingQueue because the currently serialized record would then be transferred before its class name.
 	public boolean newMonitoringRecordNonBlocking(final IMonitoringRecord monitoringRecord) {
-		// delegates (string registry) records to the worker directly and thus ignores the prioritizedBlockingQueue
+		// delegates string registry records to the worker directly and thus ignores the prioritizedBlockingQueue
 		try {
-			this.blockingQueue.add(monitoringRecord);
+			this.worker.consume(monitoringRecord);
+			// this.blockingQueue.add(monitoringRecord);
 			return true;
 		} catch (final Exception e) {
 			LOG.warn("An exception occurred", e);

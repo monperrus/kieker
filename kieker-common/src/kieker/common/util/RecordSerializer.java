@@ -20,7 +20,7 @@ import java.nio.ByteBuffer;
 
 import kieker.common.record.IMonitoringRecord;
 import kieker.common.record.misc.RegistryRecord;
-import kieker.common.util.registry.ILookup;
+import kieker.common.util.registry.IRegistry;
 
 /**
  * @author Christian Wulf
@@ -29,9 +29,9 @@ import kieker.common.util.registry.ILookup;
  */
 public final class RecordSerializer {
 
-	private final ILookup<String> stringRegistry;
+	private final IRegistry<String> stringRegistry;
 
-	public RecordSerializer(final ILookup<String> stringRegistry) {
+	public RecordSerializer(final IRegistry<String> stringRegistry) {
 		super();
 		this.stringRegistry = stringRegistry;
 		// TODO the following is not possible so far, since id must be non-negative
@@ -47,7 +47,7 @@ public final class RecordSerializer {
 			buffer.putInt(recordClassId);
 			// no logging timestamp
 		} else {
-			recordClassId = this.stringRegistry.get(record.getClass().getName());
+			recordClassId = this.stringRegistry.get(record.getClass().getName()); // registers class name on demand
 			buffer.putInt(recordClassId);
 			buffer.putLong(record.getLoggingTimestamp());
 		}

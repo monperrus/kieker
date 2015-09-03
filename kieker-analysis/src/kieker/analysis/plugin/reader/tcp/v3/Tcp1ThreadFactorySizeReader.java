@@ -109,7 +109,7 @@ public final class Tcp1ThreadFactorySizeReader extends AbstractReaderPlugin impl
 				return false;
 			}
 
-			this.deserializeMonitoringRecord(recordFactory, buffer, loggingTimestamp);
+			this.deserializeMonitoringRecord(recordClassName, recordFactory, buffer, loggingTimestamp);
 		}
 
 		return true;
@@ -119,7 +119,7 @@ public final class Tcp1ThreadFactorySizeReader extends AbstractReaderPlugin impl
 		RegistryRecord.registerRecordInRegistry(buffer, this.stringRegistry);
 	}
 
-	protected void deserializeMonitoringRecord(final IRecordFactory<? extends IMonitoringRecord> recordFactory,
+	protected void deserializeMonitoringRecord(final String recordClassName, final IRecordFactory<? extends IMonitoringRecord> recordFactory,
 			final ByteBuffer buffer, final long loggingTimestamp) {
 		try {
 			final IMonitoringRecord record = recordFactory.create(buffer, this.stringRegistry);
@@ -128,7 +128,7 @@ public final class Tcp1ThreadFactorySizeReader extends AbstractReaderPlugin impl
 			this.deliver(OUTPUT_PORT_NAME_RECORDS, record);
 		} catch (final RecordInstantiationException ex) {
 			// for other reasons than due to a BufferUnderflowException
-			this.log.error("Failed to create record.", ex);
+			this.log.error("Failed to create record of type " + recordClassName, ex);
 		}
 	}
 
