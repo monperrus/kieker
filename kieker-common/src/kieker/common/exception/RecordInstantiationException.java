@@ -17,6 +17,8 @@
 package kieker.common.exception;
 
 /**
+ * Used to wrap {@link MonitoringRecordException} as {@link RuntimeException}.
+ *
  * @author Christian Wulf
  *
  * @since 1.10

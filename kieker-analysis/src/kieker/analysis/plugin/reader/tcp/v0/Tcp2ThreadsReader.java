@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************/
 
-package kieker.analysis.plugin.reader.tcp;
+package kieker.analysis.plugin.reader.tcp.v0;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -48,17 +48,13 @@ import kieker.common.util.registry.Lookup;
  *
  * @since 1.8
  */
-@Plugin(description = "A reader which reads records from a TCP port",
-		outputPorts = {
-			@OutputPort(name = TcpReader110.OUTPUT_PORT_NAME_RECORDS, eventTypes = { IMonitoringRecord.class }, description = "Output Port of the TCPReader")
-		},
-		configuration = {
-			@Property(name = TcpReader110.CONFIG_PROPERTY_NAME_PORT1, defaultValue = "10133",
-					description = "The first port of the server used for the TCP connection."),
-			@Property(name = TcpReader110.CONFIG_PROPERTY_NAME_PORT2, defaultValue = "10134",
-					description = "The second port of the server used for the TCP connection.")
-		})
-public final class TcpReader110 extends AbstractReaderPlugin {
+@Plugin(description = "A reader which reads records from a TCP port", outputPorts = {
+	@OutputPort(name = Tcp2ThreadsReader.OUTPUT_PORT_NAME_RECORDS, eventTypes = { IMonitoringRecord.class }, description = "Output Port of the TCPReader")
+}, configuration = {
+	@Property(name = Tcp2ThreadsReader.CONFIG_PROPERTY_NAME_PORT1, defaultValue = "10133", description = "The first port of the server used for the TCP connection."),
+	@Property(name = Tcp2ThreadsReader.CONFIG_PROPERTY_NAME_PORT2, defaultValue = "10134", description = "The second port of the server used for the TCP connection.")
+})
+public final class Tcp2ThreadsReader extends AbstractReaderPlugin {
 
 	/** The name of the output port delivering the received records. */
 	public static final String OUTPUT_PORT_NAME_RECORDS = "monitoringRecords";
@@ -71,14 +67,14 @@ public final class TcpReader110 extends AbstractReaderPlugin {
 	private static final int MESSAGE_BUFFER_SIZE = 65535;
 
 	private volatile Thread readerThread;
-	private volatile TcpStringReader110St tcpStringReader;
+	private volatile TCPStringReader tcpStringReader;
 	private volatile boolean terminated = false; // NOPMD
 	private final int port1;
 	private final int port2;
 	private final ILookup<String> stringRegistry = new Lookup<String>();
 	private final CachedRecordFactoryCatalog cachedRecordFactoryCatalog;
 
-	public TcpReader110(final Configuration configuration, final IProjectContext projectContext) {
+	public Tcp2ThreadsReader(final Configuration configuration, final IProjectContext projectContext) {
 		super(configuration, projectContext);
 		this.port1 = this.configuration.getIntProperty(CONFIG_PROPERTY_NAME_PORT1);
 		this.port2 = this.configuration.getIntProperty(CONFIG_PROPERTY_NAME_PORT2);
@@ -87,7 +83,7 @@ public final class TcpReader110 extends AbstractReaderPlugin {
 
 	@Override
 	public boolean init() {
-		this.tcpStringReader = new TcpStringReader110St(this.port2, this.stringRegistry);
+		this.tcpStringReader = new TCPStringReader(this.port2, this.stringRegistry);
 		this.tcpStringReader.start();
 		return super.init();
 	}
@@ -157,6 +153,7 @@ public final class TcpReader110 extends AbstractReaderPlugin {
 
 			super.deliver(OUTPUT_PORT_NAME_RECORDS, record);
 		} catch (final RecordInstantiationException ex) {
+			// for other reasons than due to a BufferUnderflowException
 			this.log.error("Failed to create record", ex);
 		}
 	}
@@ -188,18 +185,18 @@ public final class TcpReader110 extends AbstractReaderPlugin {
  *
  * @since 1.8
  */
-class TcpStringReader110 extends Thread {
+class TCPStringReader extends Thread {
 
 	private static final int MESSAGE_BUFFER_SIZE = 65535;
 
-	private static final Log LOG = LogFactory.getLog(TcpStringReader110St.class);
+	private static final Log LOG = LogFactory.getLog(TCPStringReader.class);
 
 	private final int port;
 	private final ILookup<String> stringRegistry;
 	private volatile boolean terminated = false; // NOPMD
 	private volatile Thread readerThread;
 
-	public TcpStringReader110(final int port, final ILookup<String> stringRegistry) {
+	public TCPStringReader(final int port, final ILookup<String> stringRegistry) {
 		this.port = port;
 		this.stringRegistry = stringRegistry;
 	}

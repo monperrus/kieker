@@ -25,6 +25,9 @@ import java.nio.ByteBuffer;
  */
 public interface ReadListener {
 
-	void read(ByteBuffer buffer);
+	/**
+	 * @return <code>false</code> iff the buffer size was too small, otherwise <code>true</code>.
+	 */
+	boolean read(ByteBuffer buffer);
 
 }

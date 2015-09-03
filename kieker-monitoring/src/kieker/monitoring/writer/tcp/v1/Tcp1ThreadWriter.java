@@ -14,9 +14,7 @@
  * limitations under the License.
  ***************************************************************************/
 
-package kieker.monitoring.writer.tcp;
-
-import java.util.Queue;
+package kieker.monitoring.writer.tcp.v1;
 
 import kieker.common.configuration.Configuration;
 import kieker.common.logging.Log;
@@ -29,26 +27,26 @@ import kieker.monitoring.writer.AbstractAsyncWriter;
  *
  * @since 1.12
  */
-public class NewTcpWriter extends AbstractAsyncWriter {
+public class Tcp1ThreadWriter extends AbstractAsyncWriter {
 
-	private static final Log LOG = LogFactory.getLog(NewTcpWriter.class);
-	private static final String PREFIX = NewTcpWriter.class.getName() + ".";
+	private static final Log LOG = LogFactory.getLog(Tcp1ThreadWriter.class);
+	private static final String PREFIX = Tcp1ThreadWriter.class.getName() + ".";
 
 	public static final String CONFIG_HOSTNAME = PREFIX + "hostname"; // NOCS (afterPREFIX)
 	public static final String CONFIG_PORT1 = PREFIX + "port1"; // NOCS (afterPREFIX)
 	public static final String CONFIG_BUFFERSIZE = PREFIX + "bufferSize"; // NOCS (afterPREFIX)
 	public static final String CONFIG_FLUSH = PREFIX + "flush"; // NOCS (afterPREFIX)
 
-	private Queue<IMonitoringRecord> queue;
+	// private Queue<IMonitoringRecord> queue;
 
 	private final String hostname;
 	private final int port1;
 	private final int bufferSize;
 	private final boolean flush;
 
-	private NewTcpWriterThread worker;
+	private TcpWriterThread worker;
 
-	public NewTcpWriter(final Configuration configuration) {
+	public Tcp1ThreadWriter(final Configuration configuration) {
 		super(configuration);
 		this.hostname = configuration.getStringProperty(CONFIG_HOSTNAME);
 		this.port1 = configuration.getIntProperty(CONFIG_PORT1);
@@ -58,7 +56,7 @@ public class NewTcpWriter extends AbstractAsyncWriter {
 
 	@Override
 	protected void init() throws Exception {
-		this.worker = new NewTcpWriterThread(this.monitoringController, this.blockingQueue, this.hostname, this.port1, this.bufferSize, this.flush);
+		this.worker = new TcpWriterThread(this.monitoringController, this.blockingQueue, this.hostname, this.port1, this.bufferSize, this.flush);
 		this.addWorker(this.worker);
 	}
 
@@ -66,7 +64,7 @@ public class NewTcpWriter extends AbstractAsyncWriter {
 	public boolean newMonitoringRecordNonBlocking(final IMonitoringRecord monitoringRecord) {
 		// delegates (string registry) records to the worker directly and thus ignores the prioritizedBlockingQueue
 		try {
-			this.worker.consume(monitoringRecord);
+			this.blockingQueue.add(monitoringRecord);
 			return true;
 		} catch (final Exception e) {
 			LOG.warn("An exception occurred", e);

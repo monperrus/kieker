@@ -26,10 +26,10 @@ import kieker.analysis.plugin.filter.flow.TraceAggregationFilter;
 import kieker.analysis.plugin.filter.forward.CountingPrinter;
 import kieker.analysis.plugin.filter.sink.CountingPrintSink;
 import kieker.analysis.plugin.reader.AbstractReaderPlugin;
-import kieker.analysis.plugin.reader.tcp.NewTcpReader;
-import kieker.analysis.plugin.reader.tcp.TCPReader;
-import kieker.analysis.plugin.reader.tcp.TcpReader110;
-import kieker.analysis.plugin.reader.tcp.v1.TcpReaderV0;
+import kieker.analysis.plugin.reader.tcp.v0.Tcp2ThreadsReader;
+import kieker.analysis.plugin.reader.tcp.v1.Tcp1ThreadReader;
+import kieker.analysis.plugin.reader.tcp.v2.Tcp1ThreadFactoryReader;
+import kieker.analysis.plugin.reader.tcp.v3.Tcp1ThreadFactorySizeReader;
 import kieker.common.configuration.Configuration;
 import kieker.common.logging.Log;
 import kieker.common.logging.LogFactory;
@@ -60,34 +60,31 @@ public final class FlexibleTraceReductionAnalysis {
 		switch (analysisVersion) {
 		case 0: {
 			final Configuration readerConfig = new Configuration();
-			readerConfig.setProperty(TcpReader110.CONFIG_PROPERTY_NAME_PORT1, MONITORING_RECORD_PORT);
-			readerConfig.setProperty(TcpReader110.CONFIG_PROPERTY_NAME_PORT2, STRING_RECORD_PORT);
-			reader = new TcpReader110(readerConfig, analysisController);
-			outputPortName = TcpReader110.OUTPUT_PORT_NAME_RECORDS;
+			readerConfig.setProperty(Tcp2ThreadsReader.CONFIG_PROPERTY_NAME_PORT1, MONITORING_RECORD_PORT);
+			readerConfig.setProperty(Tcp2ThreadsReader.CONFIG_PROPERTY_NAME_PORT2, STRING_RECORD_PORT);
+			reader = new Tcp2ThreadsReader(readerConfig, analysisController);
+			outputPortName = Tcp2ThreadsReader.OUTPUT_PORT_NAME_RECORDS;
 			break;
 		}
 		case 1: {
 			final Configuration readerConfig = new Configuration();
-			readerConfig.setProperty(TcpReaderV0.CONFIG_PROPERTY_NAME_PORT1, MONITORING_RECORD_PORT);
-			// readerConfig.setProperty(TcpReaderSt.CONFIG_PROPERTY_NAME_PORT2, STRING_RECORD_PORT);
-			reader = new TcpReaderV0(readerConfig, analysisController);
-			outputPortName = TcpReaderV0.OUTPUT_PORT_NAME_RECORDS;
+			readerConfig.setProperty(Tcp1ThreadReader.CONFIG_PROPERTY_NAME_PORT1, MONITORING_RECORD_PORT);
+			reader = new Tcp1ThreadReader(readerConfig, analysisController);
+			outputPortName = Tcp1ThreadReader.OUTPUT_PORT_NAME_RECORDS;
 			break;
 		}
 		case 2: {
 			final Configuration readerConfig = new Configuration();
-			readerConfig.setProperty(TCPReader.CONFIG_PROPERTY_NAME_PORT1, MONITORING_RECORD_PORT);
-			readerConfig.setProperty(TCPReader.CONFIG_PROPERTY_NAME_PORT2, STRING_RECORD_PORT);
-			reader = new TCPReader(readerConfig, analysisController);
-			outputPortName = TCPReader.OUTPUT_PORT_NAME_RECORDS;
+			readerConfig.setProperty(Tcp1ThreadFactoryReader.CONFIG_PROPERTY_NAME_PORT1, MONITORING_RECORD_PORT);
+			reader = new Tcp1ThreadFactoryReader(readerConfig, analysisController);
+			outputPortName = Tcp1ThreadFactoryReader.OUTPUT_PORT_NAME_RECORDS;
 			break;
 		}
 		case 3: {
 			final Configuration readerConfig = new Configuration();
-			readerConfig.setProperty(NewTcpReader.CONFIG_PROPERTY_NAME_PORT1, MONITORING_RECORD_PORT);
-			readerConfig.setProperty(NewTcpReader.CONFIG_PROPERTY_NAME_PORT2, STRING_RECORD_PORT);
-			reader = new NewTcpReader(readerConfig, analysisController);
-			outputPortName = NewTcpReader.OUTPUT_PORT_NAME_RECORDS;
+			readerConfig.setProperty(Tcp1ThreadFactorySizeReader.CONFIG_PROPERTY_NAME_PORT1, MONITORING_RECORD_PORT);
+			reader = new Tcp1ThreadFactorySizeReader(readerConfig, analysisController);
+			outputPortName = Tcp1ThreadFactorySizeReader.OUTPUT_PORT_NAME_RECORDS;
 			break;
 		}
 		default: {
@@ -105,7 +102,7 @@ public final class FlexibleTraceReductionAnalysis {
 
 	private static void createAndConnectPlugins(final IAnalysisController analysisController, final AbstractReaderPlugin reader,
 			final String output_port_name_records)
-			throws IllegalStateException, AnalysisConfigurationException {
+					throws IllegalStateException, AnalysisConfigurationException {
 		final Configuration configTraceRecon = new Configuration();
 		configTraceRecon.setProperty(EventRecordTraceReconstructionFilter.CONFIG_PROPERTY_NAME_TIMEUNIT, TimeUnit.SECONDS.name());
 		configTraceRecon.setProperty(EventRecordTraceReconstructionFilter.CONFIG_PROPERTY_NAME_MAX_TRACE_DURATION, Long.toString(Long.MAX_VALUE));

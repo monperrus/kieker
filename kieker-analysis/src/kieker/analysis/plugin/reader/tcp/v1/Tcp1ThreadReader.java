@@ -16,7 +16,6 @@
 
 package kieker.analysis.plugin.reader.tcp.v1;
 
-import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 
 import kieker.analysis.IProjectContext;
@@ -43,15 +42,12 @@ import kieker.common.util.registry.Lookup;
  *
  * @since 1.12
  */
-@Plugin(description = "A reader which reads records from a TCP port",
-outputPorts = {
-		@OutputPort(name = TcpReaderV0.OUTPUT_PORT_NAME_RECORDS, eventTypes = { IMonitoringRecord.class }, description = "Output Port of the TCPReader")
-},
-configuration = {
-		@Property(name = TcpReaderV0.CONFIG_PROPERTY_NAME_PORT1, defaultValue = "10133",
-				description = "The port of the server used for the TCP connection.")
+@Plugin(description = "A reader which reads records from a TCP port", outputPorts = {
+	@OutputPort(name = Tcp1ThreadReader.OUTPUT_PORT_NAME_RECORDS, eventTypes = { IMonitoringRecord.class }, description = "Output Port of the TCPReader")
+}, configuration = {
+	@Property(name = Tcp1ThreadReader.CONFIG_PROPERTY_NAME_PORT1, defaultValue = "10133", description = "The port of the server used for the TCP connection.")
 })
-public final class TcpReaderV0 extends AbstractReaderPlugin implements ReadListener {
+public final class Tcp1ThreadReader extends AbstractReaderPlugin implements ReadListener {
 
 	/** The name of the output port delivering the received records. */
 	public static final String OUTPUT_PORT_NAME_RECORDS = "monitoringRecords";
@@ -66,7 +62,7 @@ public final class TcpReaderV0 extends AbstractReaderPlugin implements ReadListe
 	private final ILookup<String> stringRegistry = new Lookup<String>();
 	private final CachedRecordFactoryCatalog cachedRecordFactoryCatalog;
 
-	public TcpReaderV0(final Configuration configuration, final IProjectContext projectContext) {
+	public Tcp1ThreadReader(final Configuration configuration, final IProjectContext projectContext) {
 		this(configuration, projectContext, new DefaultServerSocketChannelFactory());
 	}
 
@@ -75,25 +71,27 @@ public final class TcpReaderV0 extends AbstractReaderPlugin implements ReadListe
 	 *
 	 * @param byteBufferFactory
 	 */
-	public TcpReaderV0(final Configuration configuration, final IProjectContext projectContext, final ServerSocketChannelFactory serverSocketChannelFactory) {
+	public Tcp1ThreadReader(final Configuration configuration, final IProjectContext projectContext, final ServerSocketChannelFactory serverSocketChannelFactory) {
 		super(configuration, projectContext);
 		this.cachedRecordFactoryCatalog = new CachedRecordFactoryCatalog(new LegacyRecordFactoryResolver());
 		this.createMonitoringRecordReader(serverSocketChannelFactory);
 	}
 
 	@Override
-	public void read(final ByteBuffer buffer) {
+	public boolean read(final ByteBuffer buffer) {
 		final int clazzId = buffer.getInt();
-		final long loggingTimestamp = buffer.getLong();
 
 		if (clazzId == RegistryRecord.CLASS_ID) {
-			this.deserializeStringRecord(clazzId, loggingTimestamp, buffer);
+			this.deserializeStringRecord(buffer);
 		} else {
+			final long loggingTimestamp = buffer.getLong();
 			this.deserializeMonitoringRecord(clazzId, loggingTimestamp, buffer);
 		}
+
+		return true;
 	}
 
-	protected void deserializeStringRecord(final int clazzId, final long loggingTimestamp, final ByteBuffer buffer) {
+	protected void deserializeStringRecord(final ByteBuffer buffer) {
 		RegistryRecord.registerRecordInRegistry(buffer, this.stringRegistry);
 	}
 
@@ -112,9 +110,8 @@ public final class TcpReaderV0 extends AbstractReaderPlugin implements ReadListe
 			record.setLoggingTimestamp(loggingTimestamp);
 
 			this.deliver(OUTPUT_PORT_NAME_RECORDS, record);
-		} catch (final BufferUnderflowException ex) {
-			this.log.error("Failed to create record.", ex);
 		} catch (final RecordInstantiationException ex) {
+			// for other reasons than due to a BufferUnderflowException
 			this.log.error("Failed to create record.", ex);
 		}
 	}

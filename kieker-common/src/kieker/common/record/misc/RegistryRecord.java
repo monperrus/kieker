@@ -34,6 +34,7 @@ import kieker.common.util.registry.IRegistry;
  * @since 1.5
  */
 public final class RegistryRecord extends AbstractMonitoringRecord implements IMonitoringRecord.Factory, IMonitoringRecord.BinaryFactory {
+
 	public static final int SIZE = TYPE_SIZE_INT + TYPE_SIZE_STRING;
 	public static final Class<?>[] TYPES = new Class<?>[] {
 		int.class, // id
@@ -166,7 +167,7 @@ public final class RegistryRecord extends AbstractMonitoringRecord implements IM
 	 */
 	@Override
 	public int getSize() {
-		return 4 + 4 + this.strBytes.length;
+		return SIZE + this.strBytes.length;
 	}
 
 	/**
@@ -204,7 +205,8 @@ public final class RegistryRecord extends AbstractMonitoringRecord implements IM
 	 */
 	public static final void registerRecordInRegistry(final ByteBuffer buffer, final ILookup<String> stringRegistry) throws BufferOverflowException {
 		final int id = buffer.getInt();
-		final byte[] strBytes = new byte[buffer.getInt()];
+		final int numBytes = buffer.getInt();
+		final byte[] strBytes = new byte[numBytes];
 		buffer.get(strBytes);
 		String string;
 		try {

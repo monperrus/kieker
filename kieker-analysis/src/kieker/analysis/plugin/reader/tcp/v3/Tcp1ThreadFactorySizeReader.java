@@ -14,9 +14,8 @@
  * limitations under the License.
  ***************************************************************************/
 
-package kieker.analysis.plugin.reader.tcp.v2;
+package kieker.analysis.plugin.reader.tcp.v3;
 
-import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 
 import kieker.analysis.IProjectContext;
@@ -30,6 +29,7 @@ import kieker.analysis.plugin.reader.tcp.server.ServerSocketChannelFactory;
 import kieker.analysis.plugin.reader.tcp.server.TcpServer;
 import kieker.common.configuration.Configuration;
 import kieker.common.exception.RecordInstantiationException;
+import kieker.common.record.AbstractMonitoringRecord;
 import kieker.common.record.IMonitoringRecord;
 import kieker.common.record.factory.CachedRecordFactoryCatalog;
 import kieker.common.record.factory.IRecordFactory;
@@ -43,15 +43,12 @@ import kieker.common.util.registry.Lookup;
  *
  * @since 1.12
  */
-@Plugin(description = "A reader which reads records from a TCP port",
-outputPorts = {
-		@OutputPort(name = TcpReaderV1.OUTPUT_PORT_NAME_RECORDS, eventTypes = { IMonitoringRecord.class }, description = "Output Port of the TCPReader")
-},
-configuration = {
-		@Property(name = TcpReaderV1.CONFIG_PROPERTY_NAME_PORT1, defaultValue = "10133",
-				description = "The port of the server used for the TCP connection.")
+@Plugin(description = "A reader which reads records from a TCP port", outputPorts = {
+	@OutputPort(name = Tcp1ThreadFactorySizeReader.OUTPUT_PORT_NAME_RECORDS, eventTypes = { IMonitoringRecord.class }, description = "Output Port of the TCPReader")
+}, configuration = {
+	@Property(name = Tcp1ThreadFactorySizeReader.CONFIG_PROPERTY_NAME_PORT1, defaultValue = "10133", description = "The port of the server used for the TCP connection.")
 })
-public final class TcpReaderV1 extends AbstractReaderPlugin implements ReadListener {
+public final class Tcp1ThreadFactorySizeReader extends AbstractReaderPlugin implements ReadListener {
 
 	/** The name of the output port delivering the received records. */
 	public static final String OUTPUT_PORT_NAME_RECORDS = "monitoringRecords";
@@ -66,7 +63,7 @@ public final class TcpReaderV1 extends AbstractReaderPlugin implements ReadListe
 	private final ILookup<String> stringRegistry = new Lookup<String>();
 	private final CachedRecordFactoryCatalog cachedRecordFactoryCatalog;
 
-	public TcpReaderV1(final Configuration configuration, final IProjectContext projectContext) {
+	public Tcp1ThreadFactorySizeReader(final Configuration configuration, final IProjectContext projectContext) {
 		this(configuration, projectContext, new DefaultServerSocketChannelFactory());
 	}
 
@@ -75,26 +72,11 @@ public final class TcpReaderV1 extends AbstractReaderPlugin implements ReadListe
 	 *
 	 * @param byteBufferFactory
 	 */
-	public TcpReaderV1(final Configuration configuration, final IProjectContext projectContext, final ServerSocketChannelFactory serverSocketChannelFactory) {
+	public Tcp1ThreadFactorySizeReader(final Configuration configuration, final IProjectContext projectContext,
+			final ServerSocketChannelFactory serverSocketChannelFactory) {
 		super(configuration, projectContext);
 		this.cachedRecordFactoryCatalog = new CachedRecordFactoryCatalog(new RecordFactoryResolver());
 		this.createMonitoringRecordReader(serverSocketChannelFactory);
-	}
-
-	@Override
-	public void read(final ByteBuffer buffer) {
-		final int clazzId = buffer.getInt();
-		final long loggingTimestamp = buffer.getLong();
-
-		if (clazzId == RegistryRecord.CLASS_ID) {
-			this.deserializeStringRecord(clazzId, loggingTimestamp, buffer);
-		} else {
-			this.deserializeMonitoringRecord(clazzId, loggingTimestamp, buffer);
-		}
-	}
-
-	protected void deserializeStringRecord(final int clazzId, final long loggingTimestamp, final ByteBuffer buffer) {
-		RegistryRecord.registerRecordInRegistry(buffer, this.stringRegistry);
 	}
 
 	protected void createMonitoringRecordReader(final ServerSocketChannelFactory serverSocketChannelFactory) {
@@ -103,18 +85,49 @@ public final class TcpReaderV1 extends AbstractReaderPlugin implements ReadListe
 		this.monitoringRecordReader = new TcpServer(serverSocketChannelFactory, port, messageBufferSize, this, LOG);
 	}
 
-	protected void deserializeMonitoringRecord(final int clazzId, final long loggingTimestamp, final ByteBuffer buffer) {
-		try { // NOCS (Nested try-catch)
-			final String recordClassName = this.stringRegistry.get(clazzId);
+	@Override
+	public boolean read(final ByteBuffer buffer) {
+		// identify record class
+		if (buffer.remaining() < AbstractMonitoringRecord.TYPE_SIZE_INT) {
+			return false;
+		}
+		final int clazzId = buffer.getInt();
 
+		if (clazzId == RegistryRecord.CLASS_ID) {
+			this.deserializeStringRecord(buffer); // TODO check size before reading buffer as below
+		} else {
+			// identify logging timestamp
+			if (buffer.remaining() < AbstractMonitoringRecord.TYPE_SIZE_LONG) {
+				return false;
+			}
+			final long loggingTimestamp = buffer.getLong();
+
+			final String recordClassName = this.stringRegistry.get(clazzId);
+			// identify record data
 			final IRecordFactory<? extends IMonitoringRecord> recordFactory = this.cachedRecordFactoryCatalog.get(recordClassName);
+			if (buffer.remaining() < recordFactory.getRecordSizeInBytes()) { // includes the case where size is -1
+				return false;
+			}
+
+			this.deserializeMonitoringRecord(recordFactory, buffer, loggingTimestamp);
+		}
+
+		return true;
+	}
+
+	protected void deserializeStringRecord(final ByteBuffer buffer) {
+		RegistryRecord.registerRecordInRegistry(buffer, this.stringRegistry);
+	}
+
+	protected void deserializeMonitoringRecord(final IRecordFactory<? extends IMonitoringRecord> recordFactory,
+			final ByteBuffer buffer, final long loggingTimestamp) {
+		try {
 			final IMonitoringRecord record = recordFactory.create(buffer, this.stringRegistry);
 			record.setLoggingTimestamp(loggingTimestamp);
 
 			this.deliver(OUTPUT_PORT_NAME_RECORDS, record);
-		} catch (final BufferUnderflowException ex) {
-			this.log.error("Failed to create record.", ex);
 		} catch (final RecordInstantiationException ex) {
+			// for other reasons than due to a BufferUnderflowException
 			this.log.error("Failed to create record.", ex);
 		}
 	}

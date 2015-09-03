@@ -93,21 +93,29 @@ public class TcpServer {
 		final ByteBuffer buffer = ByteBuffer.allocateDirect(this.messageBufferSize);
 
 		while ((socketChannel.read(buffer) != -1) && (!this.terminated)) {
-			buffer.flip();
-			// System.out.println("Reading, remaining:" + buffer.remaining());
-			try {
-				while (buffer.hasRemaining()) {
-					buffer.mark();
-					listener.read(buffer);
-				}
-				buffer.clear();
-			} catch (final BufferUnderflowException ex) {
-				buffer.reset();
-				// System.out.println("Underflow, remaining:" + buffer.remaining());
-				buffer.compact();
-			}
+			this.process(buffer, listener);
 		}
-		// System.out.println("Channel closing...");
+	}
+
+	private void process(final ByteBuffer buffer, final ReadListener listener) {
+		buffer.flip();
+		try {
+			while (buffer.hasRemaining()) {
+				buffer.mark();
+				// listener is local to avoid re-reads of the corresponding field due to the volatile access on terminated
+				final boolean success = listener.read(buffer);
+				if (!success) {
+					buffer.reset();
+					buffer.compact();
+					return;
+				}
+			}
+			buffer.clear();
+		} catch (final BufferUnderflowException ex) {
+			this.log.warn("Unexpected buffer underflow. Resetting and compacting buffer.", ex);
+			buffer.reset();
+			buffer.compact();
+		}
 	}
 
 	public void terminate() {

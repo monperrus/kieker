@@ -1,4 +1,4 @@
-package kieker.monitoring.writer.tcp;
+package kieker.monitoring.writer.tcp.v1;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -20,8 +20,8 @@ import kieker.monitoring.writer.AbstractAsyncThread;
  *
  * @since 1.12
  */
-class NewTcpWriterThread extends AbstractAsyncThread {
-	private static final Log LOG = LogFactory.getLog(NewTcpWriterThread.class);
+class TcpWriterThread extends AbstractAsyncThread {
+	private static final Log LOG = LogFactory.getLog(TcpWriterThread.class);
 
 	private final SocketChannel socketChannel;
 	private final ByteBuffer byteBuffer;
@@ -29,7 +29,7 @@ class NewTcpWriterThread extends AbstractAsyncThread {
 	private final boolean flush;
 	private final RecordSerializer recordSerializer;
 
-	public NewTcpWriterThread(final IMonitoringController monitoringController, final BlockingQueue<IMonitoringRecord> writeQueue, final String hostname,
+	public TcpWriterThread(final IMonitoringController monitoringController, final BlockingQueue<IMonitoringRecord> writeQueue, final String hostname,
 			final int port, final int bufferSize, final boolean flush) throws IOException {
 		super(monitoringController, writeQueue);
 		this.byteBuffer = ByteBuffer.allocateDirect(bufferSize);

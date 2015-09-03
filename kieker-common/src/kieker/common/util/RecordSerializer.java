@@ -34,7 +34,7 @@ public final class RecordSerializer {
 	public RecordSerializer(final ILookup<String> stringRegistry) {
 		super();
 		this.stringRegistry = stringRegistry;
-		// TODO not possible so far, since id must be non-negative
+		// TODO the following is not possible so far, since id must be non-negative
 		// this.stringRegistry.set(RegistryRecord.class.getName(), RegistryRecord.CLASS_ID);
 	}
 
@@ -44,12 +44,14 @@ public final class RecordSerializer {
 		final int recordClassId;
 		if (record instanceof RegistryRecord) {
 			recordClassId = RegistryRecord.CLASS_ID;
+			buffer.putInt(recordClassId);
+			// no logging timestamp
 		} else {
 			recordClassId = this.stringRegistry.get(record.getClass().getName());
+			buffer.putInt(recordClassId);
+			buffer.putLong(record.getLoggingTimestamp());
 		}
 
-		buffer.putInt(recordClassId);
-		buffer.putLong(record.getLoggingTimestamp());
 		record.writeBytes(buffer, this.stringRegistry);
 	}
 }
