@@ -192,6 +192,7 @@ public final class RegistryRecord extends AbstractMonitoringRecord implements IM
 
 	/**
 	 * Static function used to register strings stored in a byte buffer as string in the string registry with the proper id.
+	 * Does not create a <code>RegisterRecord</code>.
 	 *
 	 * @param buffer
 	 *            the byte buffer containing the string

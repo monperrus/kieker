@@ -57,7 +57,7 @@ public abstract class AbstractRecordTcpReader extends AbstractTcpReader {
 
 		// identify record data
 		final IRecordFactory<? extends IMonitoringRecord> recordFactory = this.recordFactories.get(recordClassName);
-		if (buffer.remaining() < recordFactory.getRecordSizeInBytes()) {
+		if (buffer.remaining() < recordFactory.getRecordSizeInBytes()) { // includes the case where size is -1
 			return false;
 		}
 

@@ -64,7 +64,7 @@ public class NewTcpWriter extends AbstractAsyncWriter {
 
 	@Override
 	public boolean newMonitoringRecordNonBlocking(final IMonitoringRecord monitoringRecord) {
-		// delegates (string registry) records to the blocking queue and thus ignores the prioritizedBlockingQueue
+		// delegates (string registry) records to the worker directly and thus ignores the prioritizedBlockingQueue
 		try {
 			this.worker.consume(monitoringRecord);
 			return true;

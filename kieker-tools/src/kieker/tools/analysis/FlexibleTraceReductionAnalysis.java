@@ -27,6 +27,9 @@ import kieker.analysis.plugin.filter.forward.CountingPrinter;
 import kieker.analysis.plugin.filter.sink.CountingPrintSink;
 import kieker.analysis.plugin.reader.AbstractReaderPlugin;
 import kieker.analysis.plugin.reader.tcp.NewTcpReader;
+import kieker.analysis.plugin.reader.tcp.TCPReader;
+import kieker.analysis.plugin.reader.tcp.TcpReader110;
+import kieker.analysis.plugin.reader.tcp.v1.TcpReaderV0;
 import kieker.common.configuration.Configuration;
 import kieker.common.logging.Log;
 import kieker.common.logging.LogFactory;
@@ -36,39 +39,80 @@ import kieker.common.logging.LogFactory;
 /**
  * @author Christian Wulf
  */
-public final class TcpTraceReductionKieker {
+public final class FlexibleTraceReductionAnalysis {
 
 	static final int NUM_ELEMENTS_LOG_TRIGGER = 2 * 100 * 1000;
 	static final String MONITORING_RECORD_PORT = "10133";
 	static final String STRING_RECORD_PORT = "10134";
 
-	private static final Log LOG = LogFactory.getLog(TcpTraceReductionKieker.class);
+	private static final Log LOG = LogFactory.getLog(FlexibleTraceReductionAnalysis.class);
 
-	private TcpTraceReductionKieker() {}
+	private FlexibleTraceReductionAnalysis() {}
 
 	public static void main(final String[] args) throws IllegalStateException, AnalysisConfigurationException {
+		final int analysisVersion = Integer.parseInt(args[0]);
+
 		final IAnalysisController analysisController = new AnalysisController("TCPThroughput");
-		TcpTraceReductionKieker.createAndConnectPlugins(analysisController);
+
+		final AbstractReaderPlugin reader;
+		final String outputPortName;
+
+		switch (analysisVersion) {
+		case 0: {
+			final Configuration readerConfig = new Configuration();
+			readerConfig.setProperty(TcpReader110.CONFIG_PROPERTY_NAME_PORT1, MONITORING_RECORD_PORT);
+			readerConfig.setProperty(TcpReader110.CONFIG_PROPERTY_NAME_PORT2, STRING_RECORD_PORT);
+			reader = new TcpReader110(readerConfig, analysisController);
+			outputPortName = TcpReader110.OUTPUT_PORT_NAME_RECORDS;
+			break;
+		}
+		case 1: {
+			final Configuration readerConfig = new Configuration();
+			readerConfig.setProperty(TcpReaderV0.CONFIG_PROPERTY_NAME_PORT1, MONITORING_RECORD_PORT);
+			// readerConfig.setProperty(TcpReaderSt.CONFIG_PROPERTY_NAME_PORT2, STRING_RECORD_PORT);
+			reader = new TcpReaderV0(readerConfig, analysisController);
+			outputPortName = TcpReaderV0.OUTPUT_PORT_NAME_RECORDS;
+			break;
+		}
+		case 2: {
+			final Configuration readerConfig = new Configuration();
+			readerConfig.setProperty(TCPReader.CONFIG_PROPERTY_NAME_PORT1, MONITORING_RECORD_PORT);
+			readerConfig.setProperty(TCPReader.CONFIG_PROPERTY_NAME_PORT2, STRING_RECORD_PORT);
+			reader = new TCPReader(readerConfig, analysisController);
+			outputPortName = TCPReader.OUTPUT_PORT_NAME_RECORDS;
+			break;
+		}
+		case 3: {
+			final Configuration readerConfig = new Configuration();
+			readerConfig.setProperty(NewTcpReader.CONFIG_PROPERTY_NAME_PORT1, MONITORING_RECORD_PORT);
+			readerConfig.setProperty(NewTcpReader.CONFIG_PROPERTY_NAME_PORT2, STRING_RECORD_PORT);
+			reader = new NewTcpReader(readerConfig, analysisController);
+			outputPortName = NewTcpReader.OUTPUT_PORT_NAME_RECORDS;
+			break;
+		}
+		default: {
+			throw new IllegalArgumentException("Invalid analysis version: " + analysisVersion + ". Valid versions: [0,..,3]");
+		}
+		}
+
+		FlexibleTraceReductionAnalysis.createAndConnectPlugins(analysisController, reader, outputPortName);
 		try {
 			analysisController.run();
 		} catch (final AnalysisConfigurationException ex) {
-			TcpTraceReductionKieker.LOG.error("Failed to start the example project.", ex);
+			FlexibleTraceReductionAnalysis.LOG.error("Failed to start the example project.", ex);
 		}
 	}
 
-	private static void createAndConnectPlugins(final IAnalysisController analysisController) throws IllegalStateException, AnalysisConfigurationException {
-		final Configuration readerConfig = new Configuration();
-		readerConfig.setProperty(NewTcpReader.CONFIG_PROPERTY_NAME_PORT1, MONITORING_RECORD_PORT);
-		readerConfig.setProperty(NewTcpReader.CONFIG_PROPERTY_NAME_PORT2, STRING_RECORD_PORT);
-		final AbstractReaderPlugin reader = new NewTcpReader(readerConfig, analysisController);
-
+	private static void createAndConnectPlugins(final IAnalysisController analysisController, final AbstractReaderPlugin reader,
+			final String output_port_name_records)
+			throws IllegalStateException, AnalysisConfigurationException {
 		final Configuration configTraceRecon = new Configuration();
 		configTraceRecon.setProperty(EventRecordTraceReconstructionFilter.CONFIG_PROPERTY_NAME_TIMEUNIT, TimeUnit.SECONDS.name());
 		configTraceRecon.setProperty(EventRecordTraceReconstructionFilter.CONFIG_PROPERTY_NAME_MAX_TRACE_DURATION, Long.toString(Long.MAX_VALUE));
 		configTraceRecon.setProperty(EventRecordTraceReconstructionFilter.CONFIG_PROPERTY_NAME_MAX_TRACE_TIMEOUT, Long.toString(Long.MAX_VALUE));
 		final EventRecordTraceReconstructionFilter traceRecon = new EventRecordTraceReconstructionFilter(configTraceRecon, analysisController);
 
-		analysisController.connect(reader, NewTcpReader.OUTPUT_PORT_NAME_RECORDS, traceRecon, EventRecordTraceReconstructionFilter.INPUT_PORT_NAME_TRACE_RECORDS);
+		analysisController.connect(reader, output_port_name_records, traceRecon, EventRecordTraceReconstructionFilter.INPUT_PORT_NAME_TRACE_RECORDS);
 
 		final Configuration configForCountingPrinter = new Configuration();
 		configForCountingPrinter.setProperty(CountingPrintSink.CONF_THRESHOLD, Integer.toString(NUM_ELEMENTS_LOG_TRIGGER));
