@@ -223,6 +223,7 @@ public final class RegistryRecord extends AbstractMonitoringRecord implements IM
 			string = new String(strBytes); // NOPMD
 		}
 		stringRegistry.set(string, id);
+		// System.out.println("NEW: " + string + " -> " + id);
 	}
 
 }

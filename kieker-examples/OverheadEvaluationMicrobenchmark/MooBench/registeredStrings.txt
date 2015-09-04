@@ -1,0 +1,11 @@
+NEW: 1.10 -> 0
+NEW: KIEKER-BENCHMARK -> 1
+NEW: chw-PC -> 2
+NEW: NANOSECONDS -> 3
+NEW: kieker.common.record.misc.KiekerMetadataRecord -> 4
+NEW: <no-session-id> -> 5
+NEW: kieker.common.record.flow.trace.TraceMetadata -> 6
+NEW: public final long mooBench.monitoredApplication.MonitoredClassSimple.monitoredMethod(long, int) -> 7
+NEW: mooBench.monitoredApplication.MonitoredClassSimple -> 8
+NEW: kieker.common.record.flow.trace.operation.BeforeOperationEvent -> 9
+NEW: kieker.common.record.flow.trace.operation.AfterOperationEvent -> 10

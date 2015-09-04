@@ -87,40 +87,39 @@ public final class Tcp1ThreadFactorySizeReader extends AbstractReaderPlugin impl
 
 	@Override
 	public boolean read(final ByteBuffer buffer) {
+		final int remainingInBuffer = buffer.remaining();
 		// identify record class
-		if (buffer.remaining() < AbstractMonitoringRecord.TYPE_SIZE_INT) {
+		if (remainingInBuffer < AbstractMonitoringRecord.TYPE_SIZE_INT) {
 			return false;
 		}
 		final int clazzId = buffer.getInt();
 
 		if (clazzId == RegistryRecord.CLASS_ID) {
-			this.deserializeStringRecord(buffer); // TODO check size before reading buffer as below
-		} else {
-			// identify logging timestamp
-			if (buffer.remaining() < AbstractMonitoringRecord.TYPE_SIZE_LONG) {
-				return false;
-			}
-			final long loggingTimestamp = buffer.getLong();
-
-			final String recordClassName = this.stringRegistry.get(clazzId);
-			// identify record data
-			final IRecordFactory<? extends IMonitoringRecord> recordFactory = this.cachedRecordFactoryCatalog.get(recordClassName);
-			if (buffer.remaining() < recordFactory.getRecordSizeInBytes()) { // includes the case where size is -1
-				return false;
-			}
-
-			this.deserializeMonitoringRecord(recordClassName, recordFactory, buffer, loggingTimestamp);
+			return this.deserializeStringRecord(buffer, remainingInBuffer); // TODO check size before reading buffer as below
 		}
 
+		return this.deserializeMonitoringRecord(clazzId, buffer, remainingInBuffer);
+	}
+
+	private boolean deserializeStringRecord(final ByteBuffer buffer, final int remainingInBuffer) {
+		RegistryRecord.registerRecordInRegistry(buffer, this.stringRegistry);
 		return true;
 	}
 
-	protected void deserializeStringRecord(final ByteBuffer buffer) {
-		RegistryRecord.registerRecordInRegistry(buffer, this.stringRegistry);
-	}
+	private boolean deserializeMonitoringRecord(final int clazzId, final ByteBuffer buffer, final int remainingInBuffer) {
+		// identify logging timestamp
+		if (remainingInBuffer < AbstractMonitoringRecord.TYPE_SIZE_LONG) {
+			return false;
+		}
+		final long loggingTimestamp = buffer.getLong();
 
-	protected void deserializeMonitoringRecord(final String recordClassName, final IRecordFactory<? extends IMonitoringRecord> recordFactory,
-			final ByteBuffer buffer, final long loggingTimestamp) {
+		final String recordClassName = this.stringRegistry.get(clazzId);
+		// identify record data
+		final IRecordFactory<? extends IMonitoringRecord> recordFactory = this.cachedRecordFactoryCatalog.get(recordClassName);
+		if (remainingInBuffer < recordFactory.getRecordSizeInBytes()) { // includes the case where size is -1
+			return false;
+		}
+
 		try {
 			final IMonitoringRecord record = recordFactory.create(buffer, this.stringRegistry);
 			record.setLoggingTimestamp(loggingTimestamp);
@@ -130,6 +129,8 @@ public final class Tcp1ThreadFactorySizeReader extends AbstractReaderPlugin impl
 			// for other reasons than due to a BufferUnderflowException
 			this.log.error("Failed to create record of type " + recordClassName, ex);
 		}
+
+		return true;
 	}
 
 	@Override

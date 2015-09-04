@@ -89,20 +89,20 @@ public final class Tcp1ThreadFactoryReader extends AbstractReaderPlugin implemen
 		final int clazzId = buffer.getInt();
 
 		if (clazzId == RegistryRecord.CLASS_ID) {
-			this.deserializeStringRecord(buffer);
-		} else {
-			final long loggingTimestamp = buffer.getLong();
-			this.deserializeMonitoringRecord(clazzId, loggingTimestamp, buffer);
+			return this.deserializeStringRecord(buffer);
 		}
 
+		return this.deserializeMonitoringRecord(clazzId, buffer);
+	}
+
+	private boolean deserializeStringRecord(final ByteBuffer buffer) {
+		RegistryRecord.registerRecordInRegistry(buffer, this.stringRegistry);
 		return true;
 	}
 
-	protected void deserializeStringRecord(final ByteBuffer buffer) {
-		RegistryRecord.registerRecordInRegistry(buffer, this.stringRegistry);
-	}
+	private boolean deserializeMonitoringRecord(final int clazzId, final ByteBuffer buffer) {
+		final long loggingTimestamp = buffer.getLong();
 
-	protected void deserializeMonitoringRecord(final int clazzId, final long loggingTimestamp, final ByteBuffer buffer) {
 		final String recordClassName = this.stringRegistry.get(clazzId);
 		final IRecordFactory<? extends IMonitoringRecord> recordFactory = this.cachedRecordFactoryCatalog.get(recordClassName);
 
@@ -115,6 +115,8 @@ public final class Tcp1ThreadFactoryReader extends AbstractReaderPlugin implemen
 			// for other reasons than due to a BufferUnderflowException
 			this.log.error("Failed to create record of type " + recordClassName, ex);
 		}
+
+		return true;
 	}
 
 	@Override

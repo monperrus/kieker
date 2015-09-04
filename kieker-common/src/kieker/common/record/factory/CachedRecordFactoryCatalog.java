@@ -58,16 +58,18 @@ public final class CachedRecordFactoryCatalog {
 	public IRecordFactory<? extends IMonitoringRecord> get(final String recordClassName) {
 		IRecordFactory<? extends IMonitoringRecord> recordFactory = this.cachedRecordFactories.get(recordClassName);
 		if (null == recordFactory) {
+			System.out.println("Cache MISMATCH for " + recordClassName);
 			recordFactory = this.recordFactoryResolver.get(recordClassName);
 			if (null == recordFactory) { // if a corresponding factory could not be found
 				recordFactory = new RecordFactoryWrapper(recordClassName);
 			}
+			System.out.println("Resolved factory " + recordFactory.getClass().getName());
 			final IRecordFactory<? extends IMonitoringRecord> existingFactory = this.cachedRecordFactories.putIfAbsent(recordClassName, recordFactory);
 			if (existingFactory != null) {
 				recordFactory = existingFactory;
 			}
-
 		}
+		// System.out.println("Using factory " + recordFactory.getClass().getName());
 		return recordFactory;
 	}
 }

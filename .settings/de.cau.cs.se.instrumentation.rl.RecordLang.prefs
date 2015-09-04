@@ -1,4 +1,6 @@
+BuilderConfiguration.is_project_specific=true
 autobuilding=true
+de.cau.cs.se.instrumentation.rl.RecordLang.useProjectSettings=true
 eclipse.preferences.version=1
 is_project_specific=true
 outlet.c.cleanDirectory=false

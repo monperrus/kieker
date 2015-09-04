@@ -108,23 +108,12 @@ public final class Tcp2ThreadsReader extends AbstractReaderPlugin {
 			}
 			// BEGIN also loop this one?
 			final SocketChannel socketChannel = serversocket.accept();
+
 			final ByteBuffer buffer = ByteBuffer.allocateDirect(MESSAGE_BUFFER_SIZE);
 			while ((socketChannel.read(buffer) != -1) && (!this.terminated)) {
-				buffer.flip();
-				// System.out.println("Reading, remaining:" + buffer.remaining());
-				try {
-					while (buffer.hasRemaining()) {
-						buffer.mark();
-						this.read(buffer);
-					}
-					buffer.clear();
-				} catch (final BufferUnderflowException ex) {
-					buffer.reset();
-					// System.out.println("Underflow, remaining:" + buffer.remaining());
-					buffer.compact();
-				}
+				this.process(buffer);
 			}
-			// System.out.println("Channel closing...");
+
 			socketChannel.close();
 			// END also loop this one?
 		} catch (final ClosedByInterruptException ex) {
@@ -139,6 +128,22 @@ public final class Tcp2ThreadsReader extends AbstractReaderPlugin {
 			}
 		}
 		return true;
+	}
+
+	private void process(final ByteBuffer buffer) {
+		buffer.flip();
+		// System.out.println("Reading, remaining:" + buffer.remaining());
+		try {
+			while (buffer.hasRemaining()) {
+				buffer.mark();
+				this.read(buffer);
+			}
+			buffer.clear();
+		} catch (final BufferUnderflowException ex) {
+			buffer.reset();
+			// System.out.println("Underflow, remaining:" + buffer.remaining());
+			buffer.compact();
+		}
 	}
 
 	private void read(final ByteBuffer buffer) {
