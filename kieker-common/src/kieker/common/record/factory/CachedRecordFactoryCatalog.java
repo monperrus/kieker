@@ -16,11 +16,14 @@
 
 package kieker.common.record.factory;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import kieker.common.record.IMonitoringRecord;
 import kieker.common.record.factory.old.RecordFactoryWrapper;
+import kieker.common.util.registry.IRegistry;
 
 /**
  * @author Christian Wulf
@@ -30,6 +33,7 @@ import kieker.common.record.factory.old.RecordFactoryWrapper;
 public final class CachedRecordFactoryCatalog {
 
 	private final ConcurrentMap<String, IRecordFactory<? extends IMonitoringRecord>> cachedRecordFactories;
+	private final Map<Integer, IRecordFactory<? extends IMonitoringRecord>> cachedRecordFactories2;
 	private final IRecordFactoryResolver recordFactoryResolver;
 
 	/**
@@ -42,6 +46,7 @@ public final class CachedRecordFactoryCatalog {
 	public CachedRecordFactoryCatalog(final IRecordFactoryResolver recordFactoryResolver) {
 		this.cachedRecordFactories = new ConcurrentHashMap<String, IRecordFactory<? extends IMonitoringRecord>>();
 		this.recordFactoryResolver = recordFactoryResolver;
+		this.cachedRecordFactories2 = new HashMap<Integer, IRecordFactory<? extends IMonitoringRecord>>();
 	}
 
 	/**
@@ -70,6 +75,21 @@ public final class CachedRecordFactoryCatalog {
 			}
 		}
 		// System.out.println("Using factory " + recordFactory.getClass().getName());
+		return recordFactory;
+	}
+
+	public IRecordFactory<? extends IMonitoringRecord> get(final int classId, final IRegistry<String> stringRegistry) {
+		IRecordFactory<? extends IMonitoringRecord> recordFactory = this.cachedRecordFactories2.get(classId);
+		if (null == recordFactory) {
+			final String recordClassName = stringRegistry.get(classId);
+			recordFactory = this.recordFactoryResolver.get(recordClassName);
+			if (null == recordFactory) { // if a corresponding factory could not be found
+				recordFactory = new RecordFactoryWrapper(recordClassName);
+			}
+			// System.out.println("Resolved factory " + recordFactory.getClass().getName());
+			recordFactory = this.cachedRecordFactories2.put(classId, recordFactory);
+		}
+
 		return recordFactory;
 	}
 }
