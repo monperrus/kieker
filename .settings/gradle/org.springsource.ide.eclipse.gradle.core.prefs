@@ -1,0 +1,4 @@
+#org.springsource.ide.eclipse.gradle.core.preferences.GradleProjectPreferences
+#Wed Nov 11 14:12:21 CET 2015
+build.family.org.gradle.tooling.model.eclipse.HierarchicalEclipseProject=;kieker-analysis;kieker-checkstyle-extension;kieker-common;kieker-documentation;kieker-documentation/userguide;kieker-examples;kieker-monitoring;kieker-tools;
+org.springsource.ide.eclipse.gradle.rootprojectloc=
