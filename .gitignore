@@ -31,3 +31,6 @@ plugin.xml
 /build-eclipse/
 /javadoc
 **/.gradle
+/data-type-pattern.cfg
+/kieker-12.hg.xmi
+/observed-system.cfg
