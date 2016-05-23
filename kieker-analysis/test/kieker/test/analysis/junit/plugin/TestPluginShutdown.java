@@ -163,13 +163,12 @@ public final class TestPluginShutdown extends AbstractKiekerTest {
 		final ShutdownReader r1 = new ShutdownReader(new Configuration(), ctrl);
 		final ShutdownReader r2 = new ShutdownReader(new Configuration(), ctrl);
 		final ShutdownFilter f1 = new ShutdownFilter(new Configuration(), ctrl);
-
 		ctrl.connect(r1, ShutdownReader.OUTPUT_PORT_NAME, f1, ShutdownFilter.INPUT_PORT_NAME);
 		ctrl.connect(r2, ShutdownReader.OUTPUT_PORT_NAME, f1, ShutdownFilter.INPUT_PORT_NAME);
 		ctrl.run();
-		Assert.assertEquals(0, r1.shutdownNr);
-		Assert.assertEquals(1, r2.shutdownNr);
-		Assert.assertEquals(2, f1.shutdownNr);
+		
+		Assert.assertTrue("r1 terminated before f1", r1.shutdownNr < f1.shutdownNr);
+		Assert.assertTrue("r2 terminated before f1", r2.shutdownNr < f1.shutdownNr);
 		Assert.assertEquals(AnalysisController.STATE.TERMINATED, ctrl.getState());
 	}
 
@@ -195,11 +194,11 @@ public final class TestPluginShutdown extends AbstractKiekerTest {
 		ctrl.connect(f1, ShutdownFilter.OUTPUT_PORT_NAME, f2, ShutdownFilter.INPUT_PORT_NAME);
 		ctrl.connect(f2, ShutdownFilter.OUTPUT_PORT_NAME, f3, ShutdownFilter.INPUT_PORT_NAME);
 		ctrl.run();
-		Assert.assertEquals(0, r1.shutdownNr);
-		Assert.assertEquals(1, f1.shutdownNr);
-		Assert.assertEquals(2, f2.shutdownNr);
-		Assert.assertEquals(3, r2.shutdownNr);
-		Assert.assertEquals(4, f3.shutdownNr);
+		
+		Assert.assertTrue("r1 terminated before f1", r1.shutdownNr < f1.shutdownNr);
+		Assert.assertTrue("f1 terminated before f2", f1.shutdownNr < f2.shutdownNr);
+		Assert.assertTrue("f2 terminated before f3", f2.shutdownNr < f3.shutdownNr);
+		Assert.assertTrue("r2 terminated before f3", r2.shutdownNr < f3.shutdownNr);		
 		Assert.assertEquals(AnalysisController.STATE.TERMINATED, ctrl.getState());
 	}
 
