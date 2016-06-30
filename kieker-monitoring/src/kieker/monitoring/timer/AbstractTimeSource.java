@@ -17,27 +17,74 @@
 package kieker.monitoring.timer;
 
 import kieker.common.configuration.Configuration;
+import kieker.common.logging.Log;
+import kieker.common.logging.LogFactory;
+
+import java.util.concurrent.TimeUnit;
 
 /**
- * @author Jan Waller
+ * This class serves methods for creating different timers for measuring time.
+ *
+ * @author Jan Waller, Dominic Parga Cacheiro
  * 
  * @since 1.3
  */
 public abstract class AbstractTimeSource implements ITimeSource {
 
-	/**
-	 * This constructor initializes the class using the given configuration.
-	 * 
-	 * @param configuration
-	 *            The configuration for this time source.
-	 */
-	protected AbstractTimeSource(final Configuration configuration) {
-		// somewhat dirty hack...
-		final Configuration defaultConfig = this.getDefaultConfiguration(); // NOPMD (overrideable)
-		if (defaultConfig != null) {
-			configuration.setDefaultConfiguration(defaultConfig);
-		}
-	}
+  // time unit - not used for now, supposed to be used in switch-case in the constructor (in future)
+  public final byte NANOS = 0;
+  public final byte MICROS = NANOS + 1;
+  public final byte MILLIS = MICROS + 1;
+  public final byte SECONDS = MILLIS + 1;
+
+  // measuring
+  protected final TimeUnit timeunit;
+  protected long offset;
+
+  /**
+   * <p>
+   * Default constructor. The default offset is set to 0.
+   * </p>
+   * @param configuration This config file can be used to store offset and time unit.
+   * @param clazz This parameter is used for reading the configuration settings
+   * (see {@link #CONFIG_KEY_OFFSET(Class)} and {@link #CONFIG_KEY_UNIT(Class)})
+   * and for logging messages.
+   */
+  AbstractTimeSource(final Configuration configuration,
+                     final Class<? extends AbstractTimeSource> clazz) {
+    // setting default configuration (original comment: "somewhat dirty hack...")
+    final Configuration defaultConfig = getDefaultConfiguration(); // NOPMD (overrideable)
+    if (defaultConfig != null)
+      configuration.setDefaultConfiguration(defaultConfig);
+
+    String CONFIG_OFFSET = CONFIG_KEY_OFFSET(clazz);
+    String CONFIG_UNIT = CONFIG_KEY_UNIT(clazz);
+    Log log = LogFactory.getLog(clazz);
+
+    // setting time unit
+    final int timeunitval = configuration.getIntProperty(CONFIG_UNIT);
+    switch (timeunitval) {
+      case 0:
+        timeunit = TimeUnit.NANOSECONDS;
+        break;
+      case 1:
+        timeunit = TimeUnit.MICROSECONDS;
+        break;
+      case 2:
+        timeunit = TimeUnit.MILLISECONDS;
+        break;
+      case 3:
+        timeunit = TimeUnit.SECONDS;
+        break;
+      default:
+        log.warn("Failed to determine value of " + CONFIG_UNIT + " (0, 1, 2, or 3 expected)." +
+                "Setting to 0=nanoseconds");
+        timeunit = TimeUnit.NANOSECONDS;
+        break;
+    }
+
+    offset = 0;
+  }
 
 	/**
 	 * This method should be overwritten, iff the timer is external to Kieker and
@@ -48,6 +95,32 @@ public abstract class AbstractTimeSource implements ITimeSource {
 	protected Configuration getDefaultConfiguration() { // NOPMD (default implementation)
 		return null;
 	}
+
+  /**
+   * @return clazz.getName() + ".offset"
+   * @since 1.12
+   */
+  public static String CONFIG_KEY_OFFSET(Class<? extends ITimeSource> clazz) {
+    return clazz.getName() + ".offset";
+  }
+
+  /**
+   * @return clazz.getName() + ".unit"
+   * @since 1.12
+   */
+  public static String CONFIG_KEY_UNIT(Class<? extends ITimeSource> clazz) {
+    return clazz.getName() + ".unit";
+  }
+
+  /*
+  |=================|
+  | (i) ITimeSource |
+  |=================|
+  */
+  @Override
+  public TimeUnit getTimeUnit() {
+    return timeunit;
+  }
 
 	@Override
 	public abstract String toString(); // findbugs: This has to be declared here to make this method abstract!

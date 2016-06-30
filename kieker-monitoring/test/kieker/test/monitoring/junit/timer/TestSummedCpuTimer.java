@@ -16,46 +16,44 @@
 
 package kieker.test.monitoring.junit.timer;
 
-import java.util.concurrent.TimeUnit;
-
-import kieker.monitoring.timer.SystemMilliTimer;
-import kieker.monitoring.timer.SystemNanoTimer;
+import kieker.common.configuration.Configuration;
+import kieker.monitoring.core.configuration.ConfigurationFactory;
+import kieker.monitoring.timer.SystemCpuTimer;
+import kieker.monitoring.timer.UserCpuTimer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import kieker.common.configuration.Configuration;
-import kieker.monitoring.core.configuration.ConfigurationFactory;
-import kieker.monitoring.timer.ITimeSource;
-import kieker.monitoring.timer.SystemNanoTimer;
+import java.util.concurrent.TimeUnit;
 
 /**
- * This class is a JUnit test for the {@link SystemNanoTimer}, testing the timer with different configurations.
- *
- * @author Jan Waller, Dominic Parga Cacheiro
- *
- * @since 1.5
+ * A test for the class {@link UserCpuTimer}.
+ * 
+ * @author Dominic Parga Cacheiro
+ * 
+ * @since 1.12
  */
-public final class TestSystemNanoTimer extends AbstractTestTimeSource {
+public final class TestSummedCpuTimer extends AbstractTestTimeSource {
 
-  private Configuration configuration;
+  private Configuration systemConfiguration, userConfiguration;
   private TimeUnit timeunit;
   private long offset;
 
   /**
-   * Default constructor.
-   */
-  public TestSystemNanoTimer() {
-    // empty default constructor
-  }
+	 * Default constructor.
+	 */
+	public TestSummedCpuTimer() {
+		// empty default constructor
+	}
 
   @Before
   public final void beforeParameterSetting() {
-    configuration = ConfigurationFactory.createDefaultConfiguration();
+    systemConfiguration = ConfigurationFactory.createDefaultConfiguration();
+    userConfiguration = ConfigurationFactory.createDefaultConfiguration();
   }
 
   @After
-  public final void executeTesting() {
+  public final void executeTesting() { // NOPMD (assert in superclass)
     String timeunitIdx = "-1";
     switch (timeunit) {
       case NANOSECONDS:
@@ -71,14 +69,21 @@ public final class TestSystemNanoTimer extends AbstractTestTimeSource {
         timeunitIdx = "3";
         break;
     }
-    configuration.setProperty(
-            SystemNanoTimer.CONFIG_KEY_UNIT(SystemNanoTimer.class),
+    systemConfiguration.setProperty(
+            UserCpuTimer.CONFIG_KEY_UNIT(SystemCpuTimer.class),
             timeunitIdx);
-    configuration.setProperty(
-            SystemNanoTimer.CONFIG_KEY_OFFSET(SystemNanoTimer.class),
+    systemConfiguration.setProperty(
+            UserCpuTimer.CONFIG_KEY_OFFSET(SystemCpuTimer.class),
             "" + offset);
-    super.testTimestamping(
-            new SystemNanoTimer(configuration),
+    userConfiguration.setProperty(
+            UserCpuTimer.CONFIG_KEY_UNIT(UserCpuTimer.class),
+            timeunitIdx);
+    userConfiguration.setProperty(
+            UserCpuTimer.CONFIG_KEY_OFFSET(UserCpuTimer.class),
+            "" + offset);
+    super.testSummedCpuTimestamping(
+            new SystemCpuTimer(systemConfiguration),
+            new UserCpuTimer(userConfiguration),
             timeunit,
             offset);
   }
@@ -89,16 +94,16 @@ public final class TestSystemNanoTimer extends AbstractTestTimeSource {
   |====================|
   */
 	/**
-	 * This method tests the {@link SystemNanoTimer} with default configuration.
+	 * This method tests the timer with default configuration.
 	 */
 	@Test
 	public final void testDefault() {
     timeunit = TimeUnit.NANOSECONDS;
-    offset = configuration.getLongProperty(SystemNanoTimer.CONFIG_KEY_OFFSET(SystemNanoTimer.class));
+    offset = userConfiguration.getLongProperty(UserCpuTimer.CONFIG_KEY_OFFSET(UserCpuTimer.class));
 	}
 
 	/**
-	 * This method tests the {@link SystemNanoTimer} with nanoseconds as time unit.
+	 * This method tests the timer with nanoseconds as used time unit.
 	 */
 	@Test
 	public final void testNanoseconds0() {
@@ -107,7 +112,7 @@ public final class TestSystemNanoTimer extends AbstractTestTimeSource {
 	}
 
 	/**
-	 * This method tests the {@link SystemNanoTimer} with microseconds as time unit.
+	 * This method tests the timer with microseconds as used time unit.
 	 */
 	@Test
 	public final void testMicroseconds0() {
@@ -116,16 +121,16 @@ public final class TestSystemNanoTimer extends AbstractTestTimeSource {
 	}
 
 	/**
-	 * This method tests the {@link SystemNanoTimer} with milliseconds as time unit.
+	 * This method tests the timer with milliseconds as used time unit.
 	 */
 	@Test
-	public final void testMilliseconds0() {
+  public final void testMilliseconds0() {
     timeunit = TimeUnit.MILLISECONDS;
     offset = 0;
 	}
 
 	/**
-	 * This method tests the {@link SystemNanoTimer} with seconds as time unit.
+	 * This method tests the timer with seconds as used time unit.
 	 */
 	@Test
 	public final void testSeconds0() {
@@ -134,16 +139,16 @@ public final class TestSystemNanoTimer extends AbstractTestTimeSource {
 	}
 
   /**
-   * This method tests the {@link SystemNanoTimer} with nanoseconds as time unit.
+   * This method tests the timer with nanoseconds as used time unit.
    */
   @Test
   public final void testNanoseconds149() {
     timeunit = TimeUnit.NANOSECONDS;
-    offset = 200;
+    offset = 149;
   }
 
   /**
-   * This method tests the {@link SystemNanoTimer} with microseconds as time unit.
+   * This method tests the timer with microseconds as used time unit.
    */
   @Test
   public final void testMicroseconds149() {
@@ -152,7 +157,7 @@ public final class TestSystemNanoTimer extends AbstractTestTimeSource {
   }
 
   /**
-   * This method tests the {@link SystemNanoTimer} with milliseconds as time unit.
+   * This method tests the timer with milliseconds as used time unit.
    */
   @Test
   public final void testMilliseconds149() {
@@ -161,7 +166,7 @@ public final class TestSystemNanoTimer extends AbstractTestTimeSource {
   }
 
   /**
-   * This method tests the {@link SystemNanoTimer} with seconds as time unit.
+   * This method tests the timer with seconds as used time unit.
    */
   @Test
   public final void testSeconds149() {
