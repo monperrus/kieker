@@ -50,7 +50,7 @@ public final class SystemNanoTimer extends AbstractTimeSource {
    *
    * @param configuration This configuration sets:<br>
    * &bull The time unit of the returned times<br>
-   * &bull The given offset to midnight, January 1, 1970 UTC interpreted in nanoseconds.<br>NOTE: Since
+   * &bull The given offset to midnight, January 1, 1970 UTC interpreted in milliseconds.<br>NOTE: Since
    * {@link System#nanoTime()} has an undefined offset, a clock difference is calculated with millisecond accuracy
    * using {@link System#currentTimeMillis()}.
    */

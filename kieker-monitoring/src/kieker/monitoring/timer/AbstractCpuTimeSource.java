@@ -35,7 +35,7 @@ public abstract class AbstractCpuTimeSource extends AbstractTimeSource implement
    *
    * @param configuration This configuration sets:<br>
    * &bull The time unit of the returned times<br>
-   * &bull The given offset to "birth" of measured thread; default: 0
+   * &bull The given offset to "birth" of measured thread in milliseconds, converted in the constructor to nanoseconds; default: 0
    * @param clazz This parameter is used for reading the configuration settings
    * (see {@link #CONFIG_KEY_OFFSET(Class)} and {@link #CONFIG_KEY_UNIT(Class)})
    * and for logging messages.
