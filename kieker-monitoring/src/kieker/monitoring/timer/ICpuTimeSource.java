@@ -19,41 +19,24 @@ package kieker.monitoring.timer;
 import java.util.concurrent.TimeUnit;
 
 /**
- * @author Jan Waller, Dominic Parga Cacheiro
+ * @author Dominic Parga Cacheiro
  * 
- * @since 1.3
+ * @since 1.12
  */
-public interface ITimeSource {
-
+public interface ICpuTimeSource extends ITimeSource {
   /**
-   * @return The time difference between the current time and the previously set offset
-   * converted to the set {@link TimeUnit}.
+   * This method is used in the case that the time is dependant of a certain thread.
+   *
+   * @param id see {@link java.lang.management.ThreadMXBean#getThreadCpuTime(long)}
+   * @return The timestamp for the current time converted to the set {@link TimeUnit}
    *
    * @see #getTimeUnit()
-   * @since 1.3
+   * @since 1.12
    */
-	long getTime();
+  long getTime(long id);
 
-	/**
-	 * @return The offset of the timesource to midnight, 1970-1-1 UTC in {@link TimeUnit}.
-	 * 
-	 * @see #getTimeUnit()
-	 * @since 1.7
-	 */
-	long getOffset();
-
-	/**
-	 * @return The {@link TimeUnit} of the timesource.
-	 * 
-	 * @since 1.7
-	 */
-	TimeUnit getTimeUnit();
-
-	/**
-	 * @return A String representation of the timesource. E.g., the meaning of a timestamp from this source.
-	 * 
-	 * @since 1.5
-	 */
-	@Override
-	String toString();
+  /**
+   * see {@link java.lang.management.ThreadMXBean#isThreadCpuTimeSupported()}
+   */
+  boolean isThreadCpuTimeSupported();
 }

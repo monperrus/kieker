@@ -18,6 +18,10 @@ package kieker.test.monitoring.junit.timer;
 
 import java.util.concurrent.TimeUnit;
 
+import kieker.monitoring.timer.SystemMilliTimer;
+import kieker.monitoring.timer.SystemNanoTimer;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import kieker.common.configuration.Configuration;
@@ -27,71 +31,142 @@ import kieker.monitoring.timer.SystemNanoTimer;
 
 /**
  * This class is a JUnit test for the {@link SystemNanoTimer}, testing the timer with different configurations.
- * 
- * @author Jan Waller
- * 
+ *
+ * @author Jan Waller, Dominic Parga Cacheiro
+ *
  * @since 1.5
  */
 public final class TestSystemNanoTimer extends AbstractTestTimeSource {
 
-	/**
-	 * Default constructor.
-	 */
-	public TestSystemNanoTimer() {
-		// empty default constructor
-	}
+  private Configuration configuration;
+  private TimeUnit timeunit;
+  private long offset;
 
+  /**
+   * Default constructor.
+   */
+  public TestSystemNanoTimer() {
+    // empty default constructor
+  }
+
+  @Before
+  public final void beforeParameterSetting() {
+    configuration = ConfigurationFactory.createDefaultConfiguration();
+  }
+
+  @After
+  public final void executeTesting() {
+    String timeunitIdx = "-1";
+    switch (timeunit) {
+      case NANOSECONDS:
+        timeunitIdx = "0";
+        break;
+      case MICROSECONDS:
+        timeunitIdx = "1";
+        break;
+      case MILLISECONDS:
+        timeunitIdx = "2";
+        break;
+      case SECONDS:
+        timeunitIdx = "3";
+        break;
+    }
+    configuration.setProperty(
+            SystemNanoTimer.CONFIG_KEY_UNIT(SystemNanoTimer.class),
+            timeunitIdx);
+    configuration.setProperty(
+            SystemNanoTimer.CONFIG_KEY_OFFSET(SystemNanoTimer.class),
+            "" + offset);
+    super.testTimestamping(
+            new SystemNanoTimer(configuration),
+            timeunit,
+            offset,
+            TimeUnit.NANOSECONDS);
+  }
+
+  /*
+  |====================|
+  | parameter settings |
+  |====================|
+  */
 	/**
 	 * This method tests the {@link SystemNanoTimer} with default configuration.
 	 */
 	@Test
-	public final void testDefault() { // NOPMD (assert in superclass)
-		final Configuration configuration = ConfigurationFactory.createDefaultConfiguration();
-		final ITimeSource ts = new SystemNanoTimer(configuration);
-		super.testTime(ts, TimeUnit.NANOSECONDS);
+	public final void testDefault() {
+    timeunit = TimeUnit.NANOSECONDS;
+    offset = configuration.getLongProperty(SystemNanoTimer.CONFIG_KEY_OFFSET(SystemNanoTimer.class));
 	}
 
 	/**
 	 * This method tests the {@link SystemNanoTimer} with nanoseconds as time unit.
 	 */
 	@Test
-	public final void testNanoseconds() { // NOPMD (assert in superclass)
-		final Configuration configuration = ConfigurationFactory.createDefaultConfiguration();
-		configuration.setProperty(SystemNanoTimer.CONFIG_UNIT, "0");
-		final ITimeSource ts = new SystemNanoTimer(configuration);
-		super.testTime(ts, TimeUnit.NANOSECONDS);
+	public final void testNanoseconds0() {
+    timeunit = TimeUnit.NANOSECONDS;
+    offset = 0;
 	}
 
 	/**
 	 * This method tests the {@link SystemNanoTimer} with microseconds as time unit.
 	 */
 	@Test
-	public final void testMicroseconds() { // NOPMD (assert in superclass)
-		final Configuration configuration = ConfigurationFactory.createDefaultConfiguration();
-		configuration.setProperty(SystemNanoTimer.CONFIG_UNIT, "1");
-		final ITimeSource ts = new SystemNanoTimer(configuration);
-		super.testTime(ts, TimeUnit.MICROSECONDS);
+	public final void testMicroseconds0() {
+    timeunit = TimeUnit.MICROSECONDS;
+    offset = 0;
 	}
 
 	/**
 	 * This method tests the {@link SystemNanoTimer} with milliseconds as time unit.
 	 */
 	@Test
-	public final void testMilliseconds() { // NOPMD (assert in superclass)
-		final Configuration configuration = ConfigurationFactory.createDefaultConfiguration();
-		configuration.setProperty(SystemNanoTimer.CONFIG_UNIT, "2");
-		final ITimeSource ts = new SystemNanoTimer(configuration);
-		super.testTime(ts, TimeUnit.MILLISECONDS);
+	public final void testMilliseconds0() {
+    timeunit = TimeUnit.MILLISECONDS;
+    offset = 0;
 	}
 
 	/**
 	 * This method tests the {@link SystemNanoTimer} with seconds as time unit.
 	 */
 	@Test
-	public final void testSeconds() { // NOPMD (assert in superclass)
-		final Configuration configuration = ConfigurationFactory.createDefaultConfiguration();
-		configuration.setProperty(SystemNanoTimer.CONFIG_UNIT, "3");
-		final ITimeSource ts = new SystemNanoTimer(configuration);
-		super.testTime(ts, TimeUnit.SECONDS);
+	public final void testSeconds0() {
+    timeunit = TimeUnit.SECONDS;
+    offset = 0;
 	}
+
+  /**
+   * This method tests the {@link SystemNanoTimer} with nanoseconds as time unit.
+   */
+  @Test
+  public final void testNanoseconds149() {
+    timeunit = TimeUnit.NANOSECONDS;
+    offset = 200;
+  }
+
+  /**
+   * This method tests the {@link SystemNanoTimer} with microseconds as time unit.
+   */
+  @Test
+  public final void testMicroseconds149() {
+    timeunit = TimeUnit.MICROSECONDS;
+    offset = 149;
+  }
+
+  /**
+   * This method tests the {@link SystemNanoTimer} with milliseconds as time unit.
+   */
+  @Test
+  public final void testMilliseconds149() {
+    timeunit = TimeUnit.MILLISECONDS;
+    offset = 149;
+  }
+
+  /**
+   * This method tests the {@link SystemNanoTimer} with seconds as time unit.
+   */
+  @Test
+  public final void testSeconds149() {
+    timeunit = TimeUnit.SECONDS;
+    offset = 149;
+  }
 }

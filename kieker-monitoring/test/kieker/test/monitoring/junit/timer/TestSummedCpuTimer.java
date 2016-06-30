@@ -18,7 +18,8 @@ package kieker.test.monitoring.junit.timer;
 
 import kieker.common.configuration.Configuration;
 import kieker.monitoring.core.configuration.ConfigurationFactory;
-import kieker.monitoring.timer.SystemMilliTimer;
+import kieker.monitoring.timer.SystemCpuTimer;
+import kieker.monitoring.timer.UserCpuTimer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,28 +27,29 @@ import org.junit.Test;
 import java.util.concurrent.TimeUnit;
 
 /**
- * A test for the class {@link SystemMilliTimer}.
+ * A test for the class {@link UserCpuTimer}.
  * 
- * @author Jan Waller, Dominic Parga Cacheiro
+ * @author Dominic Parga Cacheiro
  * 
- * @since 1.5
+ * @since 1.12
  */
-public final class TestSystemMilliTimer extends AbstractTestTimeSource {
+public final class TestSummedCpuTimer extends AbstractTestTimeSource {
 
-  private Configuration configuration;
+  private Configuration systemConfiguration, userConfiguration;
   private TimeUnit timeunit;
   private long offset;
 
   /**
 	 * Default constructor.
 	 */
-	public TestSystemMilliTimer() {
+	public TestSummedCpuTimer() {
 		// empty default constructor
 	}
 
   @Before
   public final void beforeParameterSetting() {
-    configuration = ConfigurationFactory.createDefaultConfiguration();
+    systemConfiguration = ConfigurationFactory.createDefaultConfiguration();
+    userConfiguration = ConfigurationFactory.createDefaultConfiguration();
   }
 
   @After
@@ -67,17 +69,23 @@ public final class TestSystemMilliTimer extends AbstractTestTimeSource {
         timeunitIdx = "3";
         break;
     }
-    configuration.setProperty(
-            SystemMilliTimer.CONFIG_KEY_UNIT(SystemMilliTimer.class),
+    systemConfiguration.setProperty(
+            UserCpuTimer.CONFIG_KEY_UNIT(SystemCpuTimer.class),
             timeunitIdx);
-    configuration.setProperty(
-            SystemMilliTimer.CONFIG_KEY_OFFSET(SystemMilliTimer.class),
+    systemConfiguration.setProperty(
+            UserCpuTimer.CONFIG_KEY_OFFSET(SystemCpuTimer.class),
             "" + offset);
-    super.testTimestamping(
-            new SystemMilliTimer(configuration),
+    userConfiguration.setProperty(
+            UserCpuTimer.CONFIG_KEY_UNIT(UserCpuTimer.class),
+            timeunitIdx);
+    userConfiguration.setProperty(
+            UserCpuTimer.CONFIG_KEY_OFFSET(UserCpuTimer.class),
+            "" + offset);
+    super.testSummedCpuTimestamping(
+            new SystemCpuTimer(systemConfiguration),
+            new UserCpuTimer(userConfiguration),
             timeunit,
-            offset,
-            TimeUnit.MILLISECONDS);
+            offset);
   }
 
   /*
@@ -91,7 +99,7 @@ public final class TestSystemMilliTimer extends AbstractTestTimeSource {
 	@Test
 	public final void testDefault() {
     timeunit = TimeUnit.NANOSECONDS;
-    offset = configuration.getLongProperty(SystemMilliTimer.CONFIG_KEY_OFFSET(SystemMilliTimer.class));
+    offset = userConfiguration.getLongProperty(UserCpuTimer.CONFIG_KEY_OFFSET(UserCpuTimer.class));
 	}
 
 	/**
@@ -116,7 +124,7 @@ public final class TestSystemMilliTimer extends AbstractTestTimeSource {
 	 * This method tests the timer with milliseconds as used time unit.
 	 */
 	@Test
-	public final void testMilliseconds0() {
+  public final void testMilliseconds0() {
     timeunit = TimeUnit.MILLISECONDS;
     offset = 0;
 	}

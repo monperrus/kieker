@@ -26,56 +26,46 @@ import kieker.common.logging.LogFactory;
 
 /**
  * A timer implementation, counting in milliseconds since a specified offset.
+ * This timer uses {@link System#currentTimeMillis()} to measure the current time stamp.
  * 
- * @author Jan Waller
+ * @author Jan Waller, Dominic Parga Cacheiro
  * 
  * @since 1.5
  */
 public final class SystemMilliTimer extends AbstractTimeSource {
-	/** The name of the configuration for the offset. */
-	public static final String CONFIG_OFFSET = SystemMilliTimer.class.getName() + ".offset";
-	/** The name of the configuration for the time unit (0 = nanoseconds, 1 = microseconds, 2 = milliseconds, 3 = seconds). */
-	public static final String CONFIG_UNIT = SystemMilliTimer.class.getName() + ".unit";
+  /**
+   * <p>
+   * Default constructor; Sets the time unit and offset as defined in the given configuration. Default offset is the
+   * current time.
+   * <p>
+   * This timer uses {@link System#currentTimeMillis()} to measure the current time stamp.
+   * <p>
+   * Accepted values for time unit (saved in {@link Configuration}):<br>
+   * &bull 0 - nanoseconds<br>
+   * &bull 1 - microseconds<br>
+   * &bull 2 - milliseconds<br>
+   * &bull 3 - seconds
+   *
+   * @param configuration This configuration sets:<br>
+   * &bull The time unit of the returned times<br>
+   * &bull The given offset to midnight, January 1, 1970 UTC interpreted in milliseconds.
+   */
+  public SystemMilliTimer(Configuration configuration) {
+    super(configuration, SystemMilliTimer.class);
 
-	private static final Log LOG = LogFactory.getLog(SystemMilliTimer.class);
+    // setting offset
+    String CONFIG_OFFSET = CONFIG_KEY_OFFSET(SystemMilliTimer.class);
+    if (configuration.getStringProperty(CONFIG_OFFSET).length() == 0)
+      offset = System.currentTimeMillis();
+    else
+      offset = configuration.getLongProperty(CONFIG_OFFSET);
+  }
 
-	private final long offset;
-	private final TimeUnit timeunit;
-
-	/**
-	 * Creates a new instance of this class using the given parameters.
-	 * 
-	 * @param configuration
-	 *            The configuration for this timer.
-	 */
-	public SystemMilliTimer(final Configuration configuration) {
-		super(configuration);
-		if (configuration.getStringProperty(CONFIG_OFFSET).length() == 0) {
-			this.offset = System.currentTimeMillis();
-		} else {
-			this.offset = configuration.getLongProperty(CONFIG_OFFSET);
-		}
-		final int timeunitval = configuration.getIntProperty(CONFIG_UNIT);
-		switch (timeunitval) {
-		case 0:
-			this.timeunit = TimeUnit.NANOSECONDS;
-			break;
-		case 1:
-			this.timeunit = TimeUnit.MICROSECONDS;
-			break;
-		case 2:
-			this.timeunit = TimeUnit.MILLISECONDS;
-			break;
-		case 3:
-			this.timeunit = TimeUnit.SECONDS;
-			break;
-		default:
-			LOG.warn("Failed to determine value of " + CONFIG_UNIT + " (0, 1, 2, or 3 expected). Setting to 0=nanoseconds");
-			this.timeunit = TimeUnit.NANOSECONDS;
-			break;
-		}
-	}
-
+  /*
+  |=================|
+  | (i) ITimeSource |
+  |=================|
+  */
 	@Override
 	public final long getTime() {
 		return this.timeunit.convert(System.currentTimeMillis() - this.offset, TimeUnit.MILLISECONDS);
@@ -84,11 +74,6 @@ public final class SystemMilliTimer extends AbstractTimeSource {
 	@Override
 	public long getOffset() {
 		return this.timeunit.convert(this.offset, TimeUnit.MILLISECONDS);
-	}
-
-	@Override
-	public final TimeUnit getTimeUnit() {
-		return this.timeunit;
 	}
 
 	@Override
