@@ -27,8 +27,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.concurrent.TimeUnit;
+import java.util.zip.GZIPOutputStream;
 
-import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -39,7 +39,7 @@ import org.junit.Test;
  */
 public class WriteTest {
 
-	private static final int WARMUP_ITERATIONS = 2;
+	// private static final int WARMUP_ITERATIONS = 2;
 	private static final int CAPACITY = 8192;
 	private static final int ITERATIONS = 200000;
 
@@ -48,17 +48,18 @@ public class WriteTest {
 	// writeDataOutputStream: 5000 ms
 	// writeWrappedByteBuffer: 1700 ms
 
-	@BeforeClass
-	public static void beforeClass() throws Exception {
-		final WriteTest warmupInstance = new WriteTest();
-		for (int i = 0; i < WARMUP_ITERATIONS; i++) {
-			warmupInstance.writeDataOutputStream();
-			warmupInstance.writeByteBuffer();
-			warmupInstance.writeWrappedByteBuffer();
-		}
-	}
+	// @BeforeClass
+	// public static void beforeClass() throws Exception {
+	// final WriteTest warmupInstance = new WriteTest();
+	// for (int i = 0; i < WARMUP_ITERATIONS; i++) {
+	// warmupInstance.writeDataOutputStream();
+	// warmupInstance.writeByteBuffer();
+	// warmupInstance.writeWrappedByteBuffer();
+	// }
+	// }
 
 	@Test
+	@Ignore
 	public void writeByteBuffer() throws Exception {
 		final ByteBuffer byteBuffer = ByteBuffer.allocateDirect(CAPACITY);
 
@@ -89,12 +90,13 @@ public class WriteTest {
 	}
 
 	@Test
-	@Ignore
 	public void writeDataOutputStream() throws Exception {
 		final Path path = Files.createTempFile("dataoutputstream", null);
-		final OutputStream outputStream = Files.newOutputStream(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
-		final BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream, CAPACITY);
-		final DataOutputStream dataOutputStream = new DataOutputStream(bufferedOutputStream);
+		OutputStream outputStream = Files.newOutputStream(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+		// important for performance: instantiate zip stream before buffered stream
+		outputStream = new GZIPOutputStream(outputStream);
+		outputStream = new BufferedOutputStream(outputStream, CAPACITY);
+		final DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
 
 		final long start = System.nanoTime();
 
@@ -119,9 +121,9 @@ public class WriteTest {
 		final ByteBuffer byteBuffer = ByteBuffer.allocateDirect(CAPACITY);
 
 		final Path path = Files.createTempFile("wrappedbytebuffer", null);
-		final OutputStream outputStream = Files.newOutputStream(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+		OutputStream outputStream = Files.newOutputStream(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
 		// outputStream = new BufferedOutputStream(outputStream, CAPACITY);
-		// outputStream = new GZIPOutputStream(outputStream);
+		outputStream = new GZIPOutputStream(outputStream);
 
 		final WritableByteChannel channel = Channels.newChannel(outputStream);
 
