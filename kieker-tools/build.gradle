@@ -25,6 +25,10 @@ dependencies {
 	testCompile project (path: ':kieker-analysis', configuration: 'testArchives')
 	// this project depends on the tests of kieker-analysis, e.g., it requires the class NamedListWriter
 	testCompile project (path: ':kieker-monitoring', configuration: 'testArchives')
+	// this dependency is needed by the embedded amqp broker for BasicAmqpWriterReaderTest
+	// https://mvnrepository.com/artifact/org.apache.qpid/qpid-broker
+	testCompile group: 'org.apache.qpid', name: 'qpid-broker', version: '0.28'
+	
 
 	testRuntime resolveLibrary('derby-*.jar')
 	testRuntime resolveLibrary('geronimo-j2ee-management_1.1_spec-*.jar')
