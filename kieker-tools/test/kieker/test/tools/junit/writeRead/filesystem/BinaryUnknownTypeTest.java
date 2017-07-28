@@ -73,7 +73,7 @@ public class BinaryUnknownTypeTest {
 	public void testIgnoreUnknownRecordType() throws Exception {
 		final List<IMonitoringRecord> records = TEST_DATA_REPOSITORY.newTestUnknownRecords();
 
-		final List<IMonitoringRecord> analyzedRecords = this.testUnknownRecordTypes(records, true);
+		final List<IMonitoringRecord> analyzedRecords = this.checkUnknownRecordTypes(records, true);
 
 		// we expect that reading abort on the occurrence of EVENT1_UNKNOWN_TYPE, i.e., the remaining lines weren't processed
 		Assert.assertThat(analyzedRecords.get(0), CoreMatchers.is(CoreMatchers.equalTo(records.get(0))));
@@ -84,15 +84,14 @@ public class BinaryUnknownTypeTest {
 	public void testTerminateUponUnknownRecordType() throws Exception {
 		final List<IMonitoringRecord> records = TEST_DATA_REPOSITORY.newTestUnknownRecords();
 
-		final List<IMonitoringRecord> analyzedRecords = this.testUnknownRecordTypes(records, false);
+		final List<IMonitoringRecord> analyzedRecords = this.checkUnknownRecordTypes(records, false);
 
 		// we expect that reading abort on the occurrence of EVENT1_UNKNOWN_TYPE, i.e., the remaining lines weren't processed
 		Assert.assertThat(analyzedRecords.get(0), CoreMatchers.is(CoreMatchers.equalTo(records.get(0))));
 		Assert.assertThat(analyzedRecords.size(), CoreMatchers.is(1));
 	}
 
-	@SuppressWarnings("PMD.JUnit4TestShouldUseTestAnnotation")
-	private List<IMonitoringRecord> testUnknownRecordTypes(final List<IMonitoringRecord> records, final boolean ignoreUnknownRecordTypes)
+	private List<IMonitoringRecord> checkUnknownRecordTypes(final List<IMonitoringRecord> records, final boolean ignoreUnknownRecordTypes)
 			throws Exception {
 		// 2. define monitoring config
 		final Configuration config = ConfigurationFactory.createDefaultConfiguration();

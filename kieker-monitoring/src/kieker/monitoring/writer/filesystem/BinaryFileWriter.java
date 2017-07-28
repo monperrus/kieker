@@ -29,11 +29,11 @@ import kieker.common.logging.Log;
 import kieker.common.logging.LogFactory;
 import kieker.common.record.IMonitoringRecord;
 import kieker.common.record.io.DefaultValueSerializer;
+import kieker.common.record.io.IValueSerializer;
 import kieker.common.util.filesystem.FileExtensionFilter;
 import kieker.monitoring.core.controller.ReceiveUnfilteredConfiguration;
 import kieker.monitoring.registry.GetIdAdapter;
 import kieker.monitoring.registry.IRegistryListener;
-import kieker.monitoring.registry.RegisterAdapter;
 import kieker.monitoring.registry.WriterRegistry;
 import kieker.monitoring.writer.AbstractMonitoringWriter;
 
@@ -46,7 +46,10 @@ import kieker.monitoring.writer.AbstractMonitoringWriter;
 public class BinaryFileWriter extends AbstractMonitoringWriter implements IRegistryListener<String>, IFileWriter {
 
 	public static final String PREFIX = BinaryFileWriter.class.getName() + ".";
-	/** The name of the configuration for the custom storage path if the writer is advised not to store in the temporary directory. */
+	/**
+	 * The name of the configuration for the custom storage path if the writer is advised not to store in the temporary
+	 * directory.
+	 */
 	public static final String CONFIG_PATH = PREFIX + "customStoragePath";
 	/** The name of the configuration determining the maximal number of entries in a file. */
 	public static final String CONFIG_MAXENTRIESINFILE = PREFIX + "maxEntriesInFile";
@@ -60,7 +63,9 @@ public class BinaryFileWriter extends AbstractMonitoringWriter implements IRegis
 	public static final String CONFIG_SHOULD_COMPRESS = PREFIX + "shouldCompress";
 	/** The name of the configuration key determining the buffer size of the output file stream */
 	public static final String CONFIG_BUFFERSIZE = PREFIX + "bufferSize";
-	/** The name of the configuration key determining to always flush the output file stream after writing each record */
+	/**
+	 * The name of the configuration key determining to always flush the output file stream after writing each record
+	 */
 	public static final String CONFIG_FLUSH = PREFIX + "flush";
 	/** The name of the configuration determining whether to flush upon each incoming registry entry. */
 	public static final String CONFIG_FLUSH_MAPFILE = PREFIX + "flushMapfile";
@@ -72,10 +77,11 @@ public class BinaryFileWriter extends AbstractMonitoringWriter implements IRegis
 	private final MappingFileWriter mappingFileWriter;
 	private final BinaryFileWriterPool fileWriterPool;
 	private final WriterRegistry writerRegistry;
-	private final RegisterAdapter<String> registerStringsAdapter;
 	private final GetIdAdapter<String> writeBytesAdapter;
 	private final boolean flush;
 	private final boolean flushMapfile;
+	/** the serializer to use for the incoming records */
+	private final IValueSerializer serializer;
 
 	public BinaryFileWriter(final Configuration configuration) {
 		super(configuration);
@@ -114,11 +120,12 @@ public class BinaryFileWriter extends AbstractMonitoringWriter implements IRegis
 
 		this.buffer = ByteBuffer.allocateDirect(bufferSize);
 		this.mappingFileWriter = new MappingFileWriter(this.logFolder, charsetName);
-		this.fileWriterPool = new BinaryFileWriterPool(LOG, this.logFolder, maxEntriesPerFile, shouldCompress, maxAmountOfFiles, maxMegaBytesPerFile);
+		this.fileWriterPool = new BinaryFileWriterPool(LOG, this.logFolder, maxEntriesPerFile, shouldCompress,
+				maxAmountOfFiles, maxMegaBytesPerFile);
 
 		this.writerRegistry = new WriterRegistry(this);
-		this.registerStringsAdapter = new RegisterAdapter<String>(this.writerRegistry);
-		this.writeBytesAdapter = new GetIdAdapter<String>(this.writerRegistry);
+		this.writeBytesAdapter = new GetIdAdapter<>(this.writerRegistry);
+		this.serializer = DefaultValueSerializer.create(this.buffer, this.writeBytesAdapter);
 	}
 
 	@Override
@@ -130,19 +137,16 @@ public class BinaryFileWriter extends AbstractMonitoringWriter implements IRegis
 	public void writeMonitoringRecord(final IMonitoringRecord monitoringRecord) {
 		final PooledFileChannel channel = this.fileWriterPool.getFileWriter(this.buffer);
 
-		monitoringRecord.registerStrings(this.registerStringsAdapter);
-
 		final ByteBuffer recordBuffer = this.buffer;
 		if ((4 + 8 + monitoringRecord.getSize()) > recordBuffer.remaining()) {
 			channel.flush(recordBuffer, LOG);
 		}
 
 		final String recordClassName = monitoringRecord.getClass().getName();
-		this.writerRegistry.register(recordClassName);
 
-		recordBuffer.putInt(this.writerRegistry.getId(recordClassName));
-		recordBuffer.putLong(monitoringRecord.getLoggingTimestamp());
-		monitoringRecord.serialize(DefaultValueSerializer.create(recordBuffer, this.writeBytesAdapter));
+		this.serializer.putString(recordClassName);
+		this.serializer.putLong(monitoringRecord.getLoggingTimestamp());
+		monitoringRecord.serialize(this.serializer);
 
 		if (this.flush) {
 			channel.flush(recordBuffer, LOG);
