@@ -43,7 +43,10 @@ import kieker.monitoring.writer.AbstractMonitoringWriter;
 public class AsciiFileWriter extends AbstractMonitoringWriter implements IRegistryListener<String>, IFileWriter {
 
 	public static final String PREFIX = AsciiFileWriter.class.getName() + ".";
-	/** The name of the configuration for the custom storage path if the writer is advised not to store in the temporary directory. */
+	/**
+	 * The name of the configuration for the custom storage path if the writer is advised not to store in the temporary
+	 * directory.
+	 */
 	public static final String CONFIG_PATH = PREFIX + "customStoragePath";
 	/** The name of the configuration for the charset name (e.g. "UTF-8") */
 	public static final String CONFIG_CHARSET_NAME = PREFIX + "charsetName";
@@ -68,6 +71,9 @@ public class AsciiFileWriter extends AbstractMonitoringWriter implements IRegist
 	private final IWriterRegistry<String> writerRegistry;
 	private final boolean flush;
 	private final boolean flushMapfile;
+
+	/** the serializer to use for the incoming records */
+	// private final IValueSerializer serializer;
 
 	public AsciiFileWriter(final Configuration configuration) {
 		super(configuration);
@@ -104,9 +110,12 @@ public class AsciiFileWriter extends AbstractMonitoringWriter implements IRegist
 		this.flushMapfile = configuration.getBooleanProperty(CONFIG_FLUSH_MAPFILE, true);
 
 		this.mappingFileWriter = new MappingFileWriter(this.logFolder, charsetName);
-		this.fileWriterPool = new AsciiFileWriterPool(LOG, this.logFolder, charsetName, maxEntriesPerFile, shouldCompress, maxAmountOfFiles, maxMegaBytesPerFile);
+		this.fileWriterPool = new AsciiFileWriterPool(LOG, this.logFolder, charsetName, maxEntriesPerFile,
+				shouldCompress, maxAmountOfFiles, maxMegaBytesPerFile);
 
 		this.writerRegistry = new WriterRegistry(this);
+		// final GetIdAdapter<String> writeBytesAdapter = new GetIdAdapter<>(this.writerRegistry);
+		// this.serializer = new TextSerializer(this.buffer, writeBytesAdapter);
 	}
 
 	@Override

@@ -77,7 +77,6 @@ public class BinaryFileWriter extends AbstractMonitoringWriter implements IRegis
 	private final MappingFileWriter mappingFileWriter;
 	private final BinaryFileWriterPool fileWriterPool;
 	private final WriterRegistry writerRegistry;
-	private final GetIdAdapter<String> writeBytesAdapter;
 	private final boolean flush;
 	private final boolean flushMapfile;
 	/** the serializer to use for the incoming records */
@@ -124,8 +123,8 @@ public class BinaryFileWriter extends AbstractMonitoringWriter implements IRegis
 				maxAmountOfFiles, maxMegaBytesPerFile);
 
 		this.writerRegistry = new WriterRegistry(this);
-		this.writeBytesAdapter = new GetIdAdapter<>(this.writerRegistry);
-		this.serializer = DefaultValueSerializer.create(this.buffer, this.writeBytesAdapter);
+		final GetIdAdapter<String> writeBytesAdapter = new GetIdAdapter<>(this.writerRegistry);
+		this.serializer = DefaultValueSerializer.create(this.buffer, writeBytesAdapter);
 	}
 
 	@Override
