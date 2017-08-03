@@ -47,8 +47,15 @@ pipeline {
     }
 
     stage('Compile') {
+      agent {
+        docker {
+          reuseNode false
+          image 'kieker/kieker-build:openjdk7'
+          args ' --rm -v ${env.WORKSPACE}:/opt/kieker'
+        }
+      }
       steps {
-        sh DOCKER_BASE + '"cd /opt/kieker; ./gradlew -S compileJava compileTestJava"'
+        sh './kieker/gradlew -S -p kieker compileJava compileTestJava'
         //stash 'everything'
       }
     }
