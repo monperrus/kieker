@@ -2,9 +2,9 @@
 
 pipeline {
   agent {
-    node {
+    //node {
       label 'kieker-slave-docker'
-    }
+    //}
   }
  
   environment {
@@ -28,9 +28,6 @@ pipeline {
         echo "NODE_NAME: " + env.NODE_NAME
         echo "NODE_LABELS: " + env.NODE_LABELS
         error "It is not allowed to create pull requests towards the 'stable' branch. Create a new pull request towards the 'master' branch please."
-        //script {
-        //  currentBuild.result = 'FAILURE'
-        //}
       }
     }
 
