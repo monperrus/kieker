@@ -46,9 +46,10 @@ pipeline {
     stage('Compile') {
       agent {
         docker {
-          reuseNode false
+          reuseNode true 
           image 'kieker/kieker-build:openjdk7'
           args ' --rm -v ${env.WORKSPACE}:/opt/kieker'
+          label 'kieker-slave-docker'
         }
       }
       steps {
