@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Set;
 
 import kieker.analysis.plugin.reader.util.IMonitoringRecordReceiver;
+import kieker.analysis.plugin.reader.util.IProgressable;
 import kieker.common.exception.MonitoringRecordException;
 import kieker.common.logging.Log;
 import kieker.common.logging.LogFactory;
@@ -42,26 +43,35 @@ import kieker.common.util.filesystem.BinaryCompressionMethod;
 import kieker.common.util.filesystem.FSUtil;
 
 /**
- * Reads the contents of a single file system log directory and passes the records to the registered receiver of type {@link IMonitoringRecordReceiver}.
+ * Reads the contents of a single file system log directory and passes the
+ * records to the registered receiver of type {@link IMonitoringRecordReceiver}.
  *
  * @author Matthias Rohr, Andre van Hoorn, Jan Waller
  *
  * @since 1.2
  */
-final class FSDirectoryReader implements Runnable {
+final class FSDirectoryReader implements Runnable, IProgressable {
 	private static final Log LOG = LogFactory.getLog(FSDirectoryReader.class);
 
-	String filePrefix = FSUtil.FILE_PREFIX; // NOPMD NOCS (package visible for inner class)
+	String filePrefix = FSUtil.FILE_PREFIX; // NOPMD NOCS (package visible for
+											// inner class)
 
-	private final Map<Integer, String> stringRegistry = new HashMap<Integer, String>(); // NOPMD (no synchronization needed)
+	private final Map<Integer, String> stringRegistry = new HashMap<Integer, String>(); // NOPMD
+																						// (no
+																						// synchronization
+																						// needed)
 
 	private final IMonitoringRecordReceiver recordReceiver;
 	private final File inputDir;
 	private boolean terminated;
 
 	private final boolean ignoreUnknownRecordTypes;
-	// This set of classes is used to filter only records of a specific type. The value null means all record types are read.
+	// This set of classes is used to filter only records of a specific type.
+	// The value null means all record types are read.
 	private final Set<String> unknownTypesObserved = new HashSet<String>();
+
+	private volatile long numMaximumTasks;
+	private volatile long numCompletedTasks;
 
 	/**
 	 * Creates a new instance of this class.
@@ -84,7 +94,8 @@ final class FSDirectoryReader implements Runnable {
 	}
 
 	/**
-	 * Starts reading and returns after each record has been passed to the registered {@link #recordReceiver}.
+	 * Starts reading and returns after each record has been passed to the
+	 * registered {@link #recordReceiver}.
 	 */
 	@Override
 	public final void run() {
@@ -94,16 +105,18 @@ final class FSDirectoryReader implements Runnable {
 			@Override
 			public boolean accept(final File pathname) {
 				final String name = pathname.getName();
-				return pathname.isFile()
-						&& name.startsWith(FSDirectoryReader.this.filePrefix)
-						&& (name.endsWith(FSUtil.NORMAL_FILE_EXTENSION) || BinaryCompressionMethod.hasValidFileExtension(name));
+				return pathname.isFile() && name.startsWith(FSDirectoryReader.this.filePrefix)
+						&& (name.endsWith(FSUtil.NORMAL_FILE_EXTENSION)
+								|| BinaryCompressionMethod.hasValidFileExtension(name));
 			}
 		});
 		if (inputFiles == null) {
 			LOG.error("Directory '" + this.inputDir + "' does not exist or an I/O error occured.");
 		} else if (inputFiles.length == 0) {
-			// level 'warn' for this case, because this is not unusual for large monitoring logs including a number of directories
-			LOG.warn("Directory '" + this.inputDir + "' contains no files starting with '" + this.filePrefix + "' and ending with a valid file extension.");
+			// level 'warn' for this case, because this is not unusual for large
+			// monitoring logs including a number of directories
+			LOG.warn("Directory '" + this.inputDir + "' contains no files starting with '" + this.filePrefix
+					+ "' and ending with a valid file extension.");
 		} else { // everything ok, we process the files
 			Arrays.sort(inputFiles, new Comparator<File>() {
 
@@ -113,27 +126,35 @@ final class FSDirectoryReader implements Runnable {
 				}
 			});
 			boolean ignoreUnknownRecordTypesWarningAlreadyShown = false;
-			for (final File inputFile : inputFiles) {
-				if (this.terminated) {
-					LOG.info("Shutting down DirectoryReader.");
-					break;
-				}
-				LOG.info("< Loading " + inputFile.getAbsolutePath());
-				if (inputFile.getName().endsWith(FSUtil.NORMAL_FILE_EXTENSION)) {
-					this.processNormalInputFile(inputFile);
-				} else {
-					if (this.ignoreUnknownRecordTypes && ignoreUnknownRecordTypesWarningAlreadyShown) {
-						ignoreUnknownRecordTypesWarningAlreadyShown = true;
-						LOG.warn("The property '" + FSReader.CONFIG_PROPERTY_NAME_IGNORE_UNKNOWN_RECORD_TYPES
-								+ "' is not supported for binary files. But trying to read '" + inputFile + "'");
+
+			this.numMaximumTasks = inputFiles.length;
+			for (int i = 0; i < inputFiles.length; i++) {
+				try {
+					final File inputFile = inputFiles[i];
+					if (this.terminated) {
+						LOG.info("Shutting down DirectoryReader.");
+						break;
 					}
-					try {
-						final BinaryCompressionMethod method = BinaryCompressionMethod.getByFileExtension(inputFile.getName());
-						this.processBinaryInputFile(inputFile, method);
-					} catch (final IllegalArgumentException ex) {
-						LOG.warn("Unknown file extension for file " + inputFile);
-						continue;
+					LOG.info("< Loading " + inputFile.getAbsolutePath());
+					if (inputFile.getName().endsWith(FSUtil.NORMAL_FILE_EXTENSION)) {
+						this.processNormalInputFile(inputFile);
+					} else {
+						if (this.ignoreUnknownRecordTypes && ignoreUnknownRecordTypesWarningAlreadyShown) {
+							ignoreUnknownRecordTypesWarningAlreadyShown = true;
+							LOG.warn("The property '" + FSReader.CONFIG_PROPERTY_NAME_IGNORE_UNKNOWN_RECORD_TYPES
+									+ "' is not supported for binary files. But trying to read '" + inputFile + "'");
+						}
+						try {
+							final BinaryCompressionMethod method = BinaryCompressionMethod
+									.getByFileExtension(inputFile.getName());
+							this.processBinaryInputFile(inputFile, method);
+						} catch (final IllegalArgumentException ex) {
+							LOG.warn("Unknown file extension for file " + inputFile);
+							continue;
+						}
 					}
+				} finally {
+					this.numCompletedTasks = i + 1;
 				}
 			}
 		}
@@ -146,14 +167,16 @@ final class FSDirectoryReader implements Runnable {
 	private final void readMappingFile() {
 		File mappingFile = new File(this.inputDir.getAbsolutePath() + File.separator + FSUtil.MAP_FILENAME);
 		if (!mappingFile.exists()) {
-			// No mapping file found. Check whether we find a legacy tpmon.map file!
+			// No mapping file found. Check whether we find a legacy tpmon.map
+			// file!
 			mappingFile = new File(this.inputDir.getAbsolutePath() + File.separator + FSUtil.LEGACY_MAP_FILENAME);
 			if (mappingFile.exists()) {
-				LOG.info("Directory '" + this.inputDir + "' contains no file '" + FSUtil.MAP_FILENAME + "'. Found '" + FSUtil.LEGACY_MAP_FILENAME
-						+ "' ... switching to legacy mode");
+				LOG.info("Directory '" + this.inputDir + "' contains no file '" + FSUtil.MAP_FILENAME + "'. Found '"
+						+ FSUtil.LEGACY_MAP_FILENAME + "' ... switching to legacy mode");
 				this.filePrefix = FSUtil.LEGACY_FILE_PREFIX;
 			} else {
-				// no {kieker|tpmon}.map exists. This is valid for very old monitoring logs. Hence, only dump a log.warn
+				// no {kieker|tpmon}.map exists. This is valid for very old
+				// monitoring logs. Hence, only dump a log.warn
 				LOG.warn("No mapping file in directory '" + this.inputDir.getAbsolutePath() + "'");
 				return;
 			}
@@ -188,7 +211,8 @@ final class FSDirectoryReader implements Runnable {
 				}
 				final String prevVal = this.stringRegistry.put(id, value);
 				if (prevVal != null) {
-					LOG.error("Found addional entry for id='" + id + "', old value was '" + prevVal + "' new value is '" + value + "'");
+					LOG.error("Found addional entry for id='" + id + "', old value was '" + prevVal + "' new value is '"
+							+ value + "'");
 				}
 			}
 		} catch (final IOException ex) {
@@ -205,7 +229,8 @@ final class FSDirectoryReader implements Runnable {
 	}
 
 	/**
-	 * Reads the records contained in the given normal file and passes them to the registered {@link #recordReceiver}.
+	 * Reads the records contained in the given normal file and passes them to
+	 * the registered {@link #recordReceiver}.
 	 *
 	 * @param inputFile
 	 *            The input file which should be processed.
@@ -238,14 +263,26 @@ final class FSDirectoryReader implements Runnable {
 						Class<? extends IMonitoringRecord> clazz = null;
 						try { // NOCS (nested try)
 							clazz = AbstractMonitoringRecord.classForName(classname);
-						} catch (final MonitoringRecordException ex) { // NOPMD (ExceptionAsFlowControl); need this to distinguish error by
+						} catch (final MonitoringRecordException ex) { // NOPMD
+																		// (ExceptionAsFlowControl);
+																		// need
+																		// this
+																		// to
+																		// distinguish
+																		// error
+																		// by
 																		// abortDueToUnknownRecordType
 							if (!this.ignoreUnknownRecordTypes) {
-								// log message will be dumped in the Exception handler below
+								// log message will be dumped in the Exception
+								// handler below
 								abortDueToUnknownRecordType = true;
 								throw new MonitoringRecordException("Failed to load record type " + classname, ex);
 							} else if (!this.unknownTypesObserved.contains(classname)) {
-								LOG.error("Failed to load record type " + classname, ex); // log once for this type
+								LOG.error("Failed to load record type " + classname, ex); // log
+																							// once
+																							// for
+																							// this
+																							// type
 								this.unknownTypesObserved.add(classname);
 							}
 							continue; // skip this ignored record
@@ -259,16 +296,21 @@ final class FSDirectoryReader implements Runnable {
 							skipValues = 2;
 						}
 
-						record = AbstractMonitoringRecord.createFromStringArray(clazz, Arrays.copyOfRange(recordFields, skipValues, recordFields.length));
+						record = AbstractMonitoringRecord.createFromStringArray(clazz,
+								Arrays.copyOfRange(recordFields, skipValues, recordFields.length));
 						record.setLoggingTimestamp(loggingTimestamp);
 					} else { // legacy record
 						final String[] recordFieldsReduced = new String[recordFields.length - 1];
 						System.arraycopy(recordFields, 1, recordFieldsReduced, 0, recordFields.length - 1);
-						record = AbstractMonitoringRecord.createFromStringArray(OperationExecutionRecord.class, recordFieldsReduced);
+						record = AbstractMonitoringRecord.createFromStringArray(OperationExecutionRecord.class,
+								recordFieldsReduced);
 					}
-				} catch (final MonitoringRecordException ex) { // NOPMD (exception as flow control)
+				} catch (final MonitoringRecordException ex) { // NOPMD
+																// (exception as
+																// flow control)
 					if (abortDueToUnknownRecordType) {
-						this.terminated = true; // at least it doesn't hurt to set it
+						this.terminated = true; // at least it doesn't hurt to
+												// set it
 						final IOException newEx = new IOException("Error processing line: " + line);
 						newEx.initCause(ex);
 						throw newEx; // NOPMD (cause is set above)
@@ -296,7 +338,8 @@ final class FSDirectoryReader implements Runnable {
 	}
 
 	/**
-	 * Reads the records contained in the given binary file and passes them to the registered {@link #recordReceiver}.
+	 * Reads the records contained in the given binary file and passes them to
+	 * the registered {@link #recordReceiver}.
 	 *
 	 * @param inputFile
 	 *            The input file which should be processed.
@@ -306,7 +349,8 @@ final class FSDirectoryReader implements Runnable {
 	private final void processBinaryInputFile(final File inputFile, final BinaryCompressionMethod method) {
 		DataInputStream in = null;
 		try {
-			in = method.getDataInputStream(inputFile, 1024 * 1024); // 1 MiB buffer
+			in = method.getDataInputStream(inputFile, 1024 * 1024); // 1 MiB
+																	// buffer
 			while (true) {
 				final Integer id;
 				try {
@@ -324,7 +368,8 @@ final class FSDirectoryReader implements Runnable {
 				final Class<?>[] typeArray = AbstractMonitoringRecord.typesForClass(clazz);
 
 				// read record
-				final long loggingTimestamp = in.readLong(); // NOPMD (must be read here!)
+				final long loggingTimestamp = in.readLong(); // NOPMD (must be
+																// read here!)
 				final Object[] objectArray = new Object[typeArray.length];
 				int idx = -1;
 				for (final Class<?> type : typeArray) {
@@ -348,14 +393,16 @@ final class FSDirectoryReader implements Runnable {
 						objectArray[idx] = in.readDouble();
 					} else if ((type == byte.class) || (type == Byte.class)) {
 						objectArray[idx] = in.readByte();
-					} else if ((type == short.class) || (type == Short.class)) { // NOPMD (short)
+					} else if ((type == short.class) || (type == Short.class)) { // NOPMD
+																					// (short)
 						objectArray[idx] = in.readShort();
 					} else if ((type == boolean.class) || (type == Boolean.class)) {
 						objectArray[idx] = in.readBoolean();
 					} else {
 						if (in.readByte() != 0) {
 							LOG.error("Unexpected value for unsupported type: " + clazz.getName());
-							return; // breaking error (break would not terminate the correct loop)
+							return; // breaking error (break would not terminate
+									// the correct loop)
 						}
 						LOG.warn("Unsupported type: " + clazz.getName());
 						objectArray[idx] = null;
@@ -379,5 +426,15 @@ final class FSDirectoryReader implements Runnable {
 				}
 			}
 		}
+	}
+
+	@Override
+	public long getNumMaximumTasks() {
+		return this.numMaximumTasks;
+	}
+
+	@Override
+	public long getNumCompletedTasks() {
+		return this.numCompletedTasks;
 	}
 }

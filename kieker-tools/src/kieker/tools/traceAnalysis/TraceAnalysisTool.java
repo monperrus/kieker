@@ -52,6 +52,7 @@ import kieker.analysis.plugin.filter.forward.StringBufferFilter;
 import kieker.analysis.plugin.filter.select.TimestampFilter;
 import kieker.analysis.plugin.filter.select.TraceIdFilter;
 import kieker.analysis.plugin.reader.filesystem.FSReader;
+import kieker.analysis.plugin.reader.util.IProgressable;
 import kieker.common.configuration.Configuration;
 import kieker.common.logging.Log;
 import kieker.common.logging.LogFactory;
@@ -105,7 +106,7 @@ import kieker.tools.util.LoggingTimestampConverter;
  * 
  * @since 0.95a
  */
-public final class TraceAnalysisTool extends AbstractCommandLineTool { // NOPMD (long class)
+public final class TraceAnalysisTool extends AbstractCommandLineTool implements IProgressable { // NOPMD (long class)
 	public static final String DATE_FORMAT_PATTERN_CMD_USAGE_HELP = Constants.DATE_FORMAT_PATTERN.replaceAll("'", "") + " | timestamp"; // only for usage info
 
 	private static final Log LOG = LogFactory.getLog(TraceAnalysisTool.class);
@@ -128,7 +129,9 @@ public final class TraceAnalysisTool extends AbstractCommandLineTool { // NOPMD 
 
 	private CommandLine cmdl;
 
-	private TraceAnalysisTool(final boolean useSystemExit) {
+	private IProgressable progressable;
+
+	TraceAnalysisTool(final boolean useSystemExit) {
 		super(useSystemExit);
 	}
 
@@ -414,6 +417,8 @@ public final class TraceAnalysisTool extends AbstractCommandLineTool { // NOPMD 
 				reader = new FSReader(conf, this.analysisController);
 			}
 
+			this.progressable = reader;
+
 			// Unify Strings
 			final StringBufferFilter stringBufferFilter = new StringBufferFilter(new Configuration(), this.analysisController);
 			this.analysisController.connect(reader, FSReader.OUTPUT_PORT_NAME_RECORDS, stringBufferFilter, StringBufferFilter.INPUT_PORT_NAME_EVENTS);
@@ -599,7 +604,7 @@ public final class TraceAnalysisTool extends AbstractCommandLineTool { // NOPMD 
 				componentPrintMsgTraceConfig.setProperty(MessageTraceWriterFilter.CONFIG_PROPERTY_NAME_OUTPUT_FN, new File(this.outputDir
 						+ File.separator
 						+ this.outputFnPrefix + Constants.MESSAGE_TRACES_FN_PREFIX + ".txt")
-						.getCanonicalPath());
+								.getCanonicalPath());
 				componentPrintMsgTrace = new MessageTraceWriterFilter(componentPrintMsgTraceConfig, this.analysisController);
 
 				this.analysisController.connect(mtReconstrFilter, TraceReconstructionFilter.OUTPUT_PORT_NAME_MESSAGE_TRACE,
@@ -619,7 +624,7 @@ public final class TraceAnalysisTool extends AbstractCommandLineTool { // NOPMD 
 				componentPrintExecTraceConfig.setProperty(ExecutionTraceWriterFilter.CONFIG_PROPERTY_NAME_OUTPUT_FN, new File(this.outputDir
 						+ File.separator
 						+ this.outputFnPrefix + Constants.EXECUTION_TRACES_FN_PREFIX + ".txt")
-						.getCanonicalPath());
+								.getCanonicalPath());
 				componentPrintExecTrace = new ExecutionTraceWriterFilter(componentPrintExecTraceConfig, this.analysisController);
 
 				this.analysisController.connect(mtReconstrFilter, TraceReconstructionFilter.OUTPUT_PORT_NAME_EXECUTION_TRACE,
@@ -881,8 +886,7 @@ public final class TraceAnalysisTool extends AbstractCommandLineTool { // NOPMD 
 			}
 
 			if (retVal) {
-				final String systemEntitiesHtmlFn =
-						this.outputDir + File.separator + this.outputFnPrefix + "system-entities.html";
+				final String systemEntitiesHtmlFn = this.outputDir + File.separator + this.outputFnPrefix + "system-entities.html";
 				final Configuration systemModel2FileFilterConfig = new Configuration();
 				systemModel2FileFilterConfig.setProperty(SystemModel2FileFilter.CONFIG_PROPERTY_NAME_HTML_OUTPUT_FN, systemEntitiesHtmlFn);
 				final SystemModel2FileFilter systemModel2FileFilter = new SystemModel2FileFilter(systemModel2FileFilterConfig, this.analysisController);
@@ -1186,6 +1190,22 @@ public final class TraceAnalysisTool extends AbstractCommandLineTool { // NOPMD 
 			}
 			return 0;
 		}
+	}
+
+	@Override
+	public long getNumMaximumTasks() {
+		if (this.progressable == null) {
+			return -1;
+		}
+		return this.progressable.getNumMaximumTasks();
+	}
+
+	@Override
+	public long getNumCompletedTasks() {
+		if (this.progressable == null) {
+			return -1;
+		}
+		return this.progressable.getNumCompletedTasks();
 	}
 
 }

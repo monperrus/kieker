@@ -33,6 +33,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import kieker.analysis.plugin.reader.util.IMonitoringRecordReceiver;
+import kieker.analysis.plugin.reader.util.IProgressable;
 import kieker.common.exception.MonitoringRecordException;
 import kieker.common.logging.Log;
 import kieker.common.logging.LogFactory;
@@ -42,24 +43,31 @@ import kieker.common.record.controlflow.OperationExecutionRecord;
 import kieker.common.util.filesystem.FSUtil;
 
 /**
- * Reads the contents of a single zip file and passes the records to the registered receiver of type {@link IMonitoringRecordReceiver}.
+ * Reads the contents of a single zip file and passes the records to the
+ * registered receiver of type {@link IMonitoringRecordReceiver}.
  *
  * @author Jan Waller
  *
  * @since 1.7
  */
-public final class FSZipReader implements Runnable {
+public final class FSZipReader implements Runnable, IProgressable {
 	private static final Log LOG = LogFactory.getLog(FSZipReader.class);
 
 	private final File zipFile;
 	private final IMonitoringRecordReceiver recordReceiver;
 	private final boolean ignoreUnknownRecordTypes;
 
-	private final Map<Integer, String> stringRegistry = new HashMap<Integer, String>(); // NOPMD (no synchronization needed)
+	private final Map<Integer, String> stringRegistry = new HashMap<Integer, String>(); // NOPMD
+																						// (no
+																						// synchronization
+																						// needed)
 
 	private boolean terminated;
+	private volatile long numMaximumTasks;
+	private volatile long numCompletedTasks;
 
-	// This set of classes is used to filter only records of a specific type. The value null means all record types are read.
+	// This set of classes is used to filter only records of a specific type.
+	// The value null means all record types are read.
 	private final Set<String> unknownTypesObserved = new HashSet<String>();
 
 	/**
@@ -72,7 +80,8 @@ public final class FSZipReader implements Runnable {
 	 * @param ignoreUnknownRecordTypes
 	 *            select only records of this type; null selects all
 	 */
-	public FSZipReader(final File zipFile, final IMonitoringRecordReceiver recordReceiver, final boolean ignoreUnknownRecordTypes) {
+	public FSZipReader(final File zipFile, final IMonitoringRecordReceiver recordReceiver,
+			final boolean ignoreUnknownRecordTypes) {
 		if ((zipFile == null) || !zipFile.isFile() || !zipFile.getName().endsWith(FSUtil.ZIP_FILE_EXTENSION)) {
 			throw new IllegalArgumentException("Invalid zip file");
 		}
@@ -82,7 +91,8 @@ public final class FSZipReader implements Runnable {
 	}
 
 	/**
-	 * Starts reading and returns after each record has been passed to the registered {@link #recordReceiver}.
+	 * Starts reading and returns after each record has been passed to the
+	 * registered {@link #recordReceiver}.
 	 */
 	@Override
 	public final void run() {
@@ -90,7 +100,9 @@ public final class FSZipReader implements Runnable {
 		try {
 			zipInputStream = new ZipInputStream(new FileInputStream(this.zipFile));
 			ZipEntry zipEntry;
-			while ((null != (zipEntry = zipInputStream.getNextEntry())) && !zipEntry.getName().equals(FSUtil.MAP_FILENAME)) { // NOCS NOPMD
+			while ((null != (zipEntry = zipInputStream.getNextEntry()))
+					&& !zipEntry.getName().equals(FSUtil.MAP_FILENAME)) { // NOCS
+																			// NOPMD
 				// do nothing, just skip to the map file if present
 			}
 			if (null == zipEntry) {
@@ -113,16 +125,19 @@ public final class FSZipReader implements Runnable {
 				}
 			}
 		}
-		// when we arrive here, we have a valid zip file and read the mapping file
+		// when we arrive here, we have a valid zip file and read the mapping
+		// file
 		// start again with the zip file
 		BufferedReader reader = null;
 		DataInputStream input = null;
 		try {
-			zipInputStream = new ZipInputStream(new FileInputStream(this.zipFile));
+			final FileInputStream fileStream = new FileInputStream(this.zipFile);
+			zipInputStream = new ZipInputStream(fileStream);
 			reader = new BufferedReader(new InputStreamReader(zipInputStream, FSUtil.ENCODING));
 			input = new DataInputStream(new BufferedInputStream(zipInputStream, 1024 * 1024));
 			ZipEntry zipEntry;
-			while (null != (zipEntry = zipInputStream.getNextEntry())) { // NOCS NOPMD
+			this.numMaximumTasks = fileStream.getChannel().size();
+			while (null != (zipEntry = zipInputStream.getNextEntry())) { // NOCS // NOPMD
 				if (this.terminated) {
 					LOG.info("Shutting down DirectoryReader.");
 					break;
@@ -134,13 +149,15 @@ public final class FSZipReader implements Runnable {
 						this.readAsciiFile(reader);
 					} else if (filename.endsWith(".bin")) {
 						LOG.info("< Loading " + filename);
-						if (this.ignoreUnknownRecordTypes) { // NOPMD (deeply nested if)
+						if (this.ignoreUnknownRecordTypes) { // NOPMD (deeply
+																// nested if)
 							LOG.warn("The property '" + FSReader.CONFIG_PROPERTY_NAME_IGNORE_UNKNOWN_RECORD_TYPES
 									+ "' is not supported for binary files. But trying to read '" + filename + "'");
 						}
 						this.readBinaryFile(input);
 					}
 				}
+				this.numCompletedTasks = fileStream.getChannel().position();
 			}
 		} catch (final IOException ex) {
 			LOG.error("Error accessing ZipInputStream", ex);
@@ -189,7 +206,9 @@ public final class FSZipReader implements Runnable {
 				final Class<?>[] typeArray = AbstractMonitoringRecord.typesForClass(clazz);
 
 				// read record
-				final long loggingTimestamp = input.readLong(); // NOPMD (must be read here!)
+				final long loggingTimestamp = input.readLong(); // NOPMD (must
+																// be read
+																// here!)
 				final Object[] objectArray = new Object[typeArray.length];
 				int idx = -1;
 				for (final Class<?> type : typeArray) {
@@ -213,14 +232,16 @@ public final class FSZipReader implements Runnable {
 						objectArray[idx] = input.readDouble();
 					} else if ((type == byte.class) || (type == Byte.class)) {
 						objectArray[idx] = input.readByte();
-					} else if ((type == short.class) || (type == Short.class)) { // NOPMD (short)
+					} else if ((type == short.class) || (type == Short.class)) { // NOPMD
+																					// (short)
 						objectArray[idx] = input.readShort();
 					} else if ((type == boolean.class) || (type == Boolean.class)) {
 						objectArray[idx] = input.readBoolean();
 					} else {
 						if (input.readByte() != 0) {
 							LOG.error("Unexpected value for unsupported type: " + clazz.getName());
-							return; // breaking error (break would not terminate the correct loop)
+							return; // breaking error (break would not terminate
+									// the correct loop)
 						}
 						LOG.warn("Unsupported type: " + clazz.getName());
 						objectArray[idx] = null;
@@ -264,14 +285,26 @@ public final class FSZipReader implements Runnable {
 						Class<? extends IMonitoringRecord> clazz = null;
 						try { // NOCS (nested try)
 							clazz = AbstractMonitoringRecord.classForName(classname);
-						} catch (final MonitoringRecordException ex) { // NOPMD (ExceptionAsFlowControl); need this to distinguish error by
+						} catch (final MonitoringRecordException ex) { // NOPMD
+																		// (ExceptionAsFlowControl);
+																		// need
+																		// this
+																		// to
+																		// distinguish
+																		// error
+																		// by
 																		// abortDueToUnknownRecordType
 							if (!this.ignoreUnknownRecordTypes) {
-								// log message will be dumped in the Exception handler below
+								// log message will be dumped in the Exception
+								// handler below
 								abortDueToUnknownRecordType = true;
 								throw new MonitoringRecordException("Failed to load record type " + classname, ex);
 							} else if (!this.unknownTypesObserved.contains(classname)) {
-								LOG.error("Failed to load record type " + classname, ex); // log once for this type
+								LOG.error("Failed to load record type " + classname, ex); // log
+																							// once
+																							// for
+																							// this
+																							// type
 								this.unknownTypesObserved.add(classname);
 							}
 							continue; // skip this ignored record
@@ -284,16 +317,21 @@ public final class FSZipReader implements Runnable {
 						} else {
 							skipValues = 2;
 						}
-						record = AbstractMonitoringRecord.createFromStringArray(clazz, Arrays.copyOfRange(recordFields, skipValues, recordFields.length));
+						record = AbstractMonitoringRecord.createFromStringArray(clazz,
+								Arrays.copyOfRange(recordFields, skipValues, recordFields.length));
 						record.setLoggingTimestamp(loggingTimestamp);
 					} else { // legacy record
 						final String[] recordFieldsReduced = new String[recordFields.length - 1];
 						System.arraycopy(recordFields, 1, recordFieldsReduced, 0, recordFields.length - 1);
-						record = AbstractMonitoringRecord.createFromStringArray(OperationExecutionRecord.class, recordFieldsReduced);
+						record = AbstractMonitoringRecord.createFromStringArray(OperationExecutionRecord.class,
+								recordFieldsReduced);
 					}
-				} catch (final MonitoringRecordException ex) { // NOPMD (exception as flow control)
+				} catch (final MonitoringRecordException ex) { // NOPMD
+																// (exception as
+																// flow control)
 					if (abortDueToUnknownRecordType) {
-						this.terminated = true; // at least it doesn't hurt to set it
+						this.terminated = true; // at least it doesn't hurt to
+												// set it
 						final IOException newEx = new IOException("Error processing line: " + line);
 						newEx.initCause(ex);
 						throw newEx; // NOPMD (cause is set above)
@@ -328,8 +366,8 @@ public final class FSZipReader implements Runnable {
 				}
 				final int split = line.indexOf('=');
 				if (split == -1) {
-					LOG.error("Failed to parse line: {" + line + "} from mapping file in zip file " + this.zipFile.toString()
-							+ ". Each line must contain ID=VALUE pairs.");
+					LOG.error("Failed to parse line: {" + line + "} from mapping file in zip file "
+							+ this.zipFile.toString() + ". Each line must contain ID=VALUE pairs.");
 					continue; // continue on errors
 				}
 				final String key = line.substring(0, split);
@@ -344,7 +382,8 @@ public final class FSZipReader implements Runnable {
 				}
 				final String prevVal = this.stringRegistry.put(id, value);
 				if (prevVal != null) {
-					LOG.error("Found addional entry for id='" + id + "', old value was '" + prevVal + "' new value is '" + value + "'");
+					LOG.error("Found addional entry for id='" + id + "', old value was '" + prevVal + "' new value is '"
+							+ value + "'");
 				}
 			}
 		} finally {
@@ -352,5 +391,15 @@ public final class FSZipReader implements Runnable {
 				in.close(); // this also closes the zipInputStream
 			}
 		}
+	}
+
+	@Override
+	public long getNumMaximumTasks() {
+		return this.numMaximumTasks;
+	}
+
+	@Override
+	public long getNumCompletedTasks() {
+		return this.numCompletedTasks;
 	}
 }

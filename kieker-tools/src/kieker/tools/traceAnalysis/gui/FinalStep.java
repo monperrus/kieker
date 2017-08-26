@@ -113,9 +113,11 @@ public class FinalStep extends AbstractStep {
 
 	public void disableButtons() {
 		this.startButton.setEnabled(false);
+		this.infoLabel.setText("Analysis is running now...");
 	}
 
 	public void enableButtons() {
+		this.infoLabel.setText("Analysis has stopped.");
 		this.startButton.setEnabled(true);
 	}
 
@@ -188,6 +190,11 @@ public class FinalStep extends AbstractStep {
 			}
 
 		}
+
+	}
+
+	public void setStatus(final long numCompletedTasks, final long numMaximumTasks) {
+		// TODO Auto-generated method stub
 
 	}
 

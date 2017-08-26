@@ -29,6 +29,7 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Properties;
+import java.util.Timer;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -229,15 +230,25 @@ public class TraceAnalysisGUI extends JFrame {
 
 		this.previousButton.setEnabled(false);
 		this.finalStep.disableButtons();
+
+		final TraceAnalysisTool traceAnalysisTool = new TraceAnalysisTool(false);
+
+		final StatusUpdateTask updateStatusTask = new StatusUpdateTask(this.finalStep, traceAnalysisTool);
+		new Timer(true).schedule(updateStatusTask, 1000, 1000);
+
 		final Thread thread = new Thread() {
 
 			@SuppressWarnings("synthetic-access")
 			@Override
 			public void run() {
-				TraceAnalysisTool.mainHelper(parameters.toArray(new String[parameters.size()]), false);
-				TraceAnalysisGUI.this.conversionStep.convert(TraceAnalysisGUI.this.welcomeStep.getOutputDirectory());
-				TraceAnalysisGUI.this.previousButton.setEnabled(true);
-				TraceAnalysisGUI.this.finalStep.enableButtons();
+				try {
+					// TraceAnalysisTool.mainHelper(parameters.toArray(new String[parameters.size()]), false);
+					traceAnalysisTool.start(parameters.toArray(new String[parameters.size()]));
+				} finally {
+					TraceAnalysisGUI.this.conversionStep.convert(TraceAnalysisGUI.this.welcomeStep.getOutputDirectory());
+					TraceAnalysisGUI.this.previousButton.setEnabled(true);
+					TraceAnalysisGUI.this.finalStep.enableButtons();
+				}
 			}
 		};
 

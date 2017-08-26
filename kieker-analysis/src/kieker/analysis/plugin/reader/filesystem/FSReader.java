@@ -17,6 +17,8 @@
 package kieker.analysis.plugin.reader.filesystem;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.PriorityQueue;
 
 import kieker.analysis.IProjectContext;
@@ -25,40 +27,54 @@ import kieker.analysis.plugin.annotation.Plugin;
 import kieker.analysis.plugin.annotation.Property;
 import kieker.analysis.plugin.reader.AbstractReaderPlugin;
 import kieker.analysis.plugin.reader.util.IMonitoringRecordReceiver;
+import kieker.analysis.plugin.reader.util.IProgressable;
 import kieker.common.configuration.Configuration;
 import kieker.common.record.IMonitoringRecord;
 import kieker.common.record.misc.EmptyRecord;
 import kieker.common.util.filesystem.FSUtil;
 
 /**
- * Filesystem reader which reads from multiple directories simultaneously ordered by the logging timestamp.
+ * Filesystem reader which reads from multiple directories simultaneously
+ * ordered by the logging timestamp.
  *
  * @author Andre van Hoorn, Jan Waller
  *
  * @since 0.95a
  */
 @Plugin(description = "A file system reader which reads records from multiple directories", outputPorts = {
-	@OutputPort(name = FSReader.OUTPUT_PORT_NAME_RECORDS, eventTypes = { IMonitoringRecord.class }, description = "Output Port of the FSReader") }, configuration = {
-		@Property(name = FSReader.CONFIG_PROPERTY_NAME_INPUTDIRS, defaultValue = ".", description = "The name of the input dirs used to read data (multiple dirs are separated by |)."),
-		@Property(name = FSReader.CONFIG_PROPERTY_NAME_IGNORE_UNKNOWN_RECORD_TYPES, defaultValue = "false", description = "Ignore unknown records? Aborts if encountered and value is false.")
-	})
-public class FSReader extends AbstractReaderPlugin implements IMonitoringRecordReceiver {
+		@OutputPort(name = FSReader.OUTPUT_PORT_NAME_RECORDS, eventTypes = {
+				IMonitoringRecord.class }, description = "Output Port of the FSReader") }, configuration = {
+						@Property(name = FSReader.CONFIG_PROPERTY_NAME_INPUTDIRS, defaultValue = ".", description = "The name of the input dirs used to read data (multiple dirs are separated by |)."),
+						@Property(name = FSReader.CONFIG_PROPERTY_NAME_IGNORE_UNKNOWN_RECORD_TYPES, defaultValue = "false", description = "Ignore unknown records? Aborts if encountered and value is false.") })
+public class FSReader extends AbstractReaderPlugin implements IMonitoringRecordReceiver, IProgressable {
 
-	/** The name of the output port delivering the record read by this plugin. */
+	/**
+	 * The name of the output port delivering the record read by this plugin.
+	 */
 	public static final String OUTPUT_PORT_NAME_RECORDS = "monitoringRecords";
 
-	/** The name of the configuration determining the input directories for this plugin. */
+	/**
+	 * The name of the configuration determining the input directories for this
+	 * plugin.
+	 */
 	public static final String CONFIG_PROPERTY_NAME_INPUTDIRS = "inputDirs";
-	/** The name of the configuration determining whether the reader ignores unknown record types or not. */
+	/**
+	 * The name of the configuration determining whether the reader ignores
+	 * unknown record types or not.
+	 */
 	public static final String CONFIG_PROPERTY_NAME_IGNORE_UNKNOWN_RECORD_TYPES = "ignoreUnknownRecordTypes";
 
-	/** This dummy record can be send to the reader's record queue to mark the end of the current file. */
+	/**
+	 * This dummy record can be send to the reader's record queue to mark the
+	 * end of the current file.
+	 */
 	private static final IMonitoringRecord EOF = new EmptyRecord();
 
 	private final boolean ignoreUnknownRecordTypes;
 
 	private final String[] inputDirs;
 	private final PriorityQueue<IMonitoringRecord> recordQueue;
+	private final List<IProgressable> progressables = new ArrayList<>();
 
 	private volatile boolean running = true;
 
@@ -86,7 +102,8 @@ public class FSReader extends AbstractReaderPlugin implements IMonitoringRecordR
 			nDirs = 1;
 		}
 		this.recordQueue = new PriorityQueue<IMonitoringRecord>(nDirs);
-		this.ignoreUnknownRecordTypes = this.configuration.getBooleanProperty(CONFIG_PROPERTY_NAME_IGNORE_UNKNOWN_RECORD_TYPES);
+		this.ignoreUnknownRecordTypes = this.configuration
+				.getBooleanProperty(CONFIG_PROPERTY_NAME_IGNORE_UNKNOWN_RECORD_TYPES);
 	}
 
 	/**
@@ -106,14 +123,21 @@ public class FSReader extends AbstractReaderPlugin implements IMonitoringRecordR
 		// start all reader
 		int notInitializesReaders = 0;
 		for (final String inputDirFn : this.inputDirs) {
+			// for (int i = 0; i < this.inputDirs.length; i++) {
+			// final String inputDirFn = this.inputDirs[i];
 			// Make sure that white spaces in paths are handled correctly
 			final File inputDir = new File(inputDirFn);
 
 			final Thread readerThread;
 			if (inputDir.isDirectory()) {
-				readerThread = new Thread(new FSDirectoryReader(inputDir, this, this.ignoreUnknownRecordTypes));
+				final FSDirectoryReader runnableReader = new FSDirectoryReader(inputDir, this,
+						this.ignoreUnknownRecordTypes);
+				this.progressables.add(runnableReader);
+				readerThread = new Thread(runnableReader);
 			} else if (inputDir.isFile() && inputDirFn.endsWith(FSUtil.ZIP_FILE_EXTENSION)) {
-				readerThread = new Thread(new FSZipReader(inputDir, this, this.ignoreUnknownRecordTypes));
+				final FSZipReader runnableReader = new FSZipReader(inputDir, this, this.ignoreUnknownRecordTypes);
+				this.progressables.add(runnableReader);
+				readerThread = new Thread(runnableReader);
 			} else {
 				this.log.warn("Invalid Directory or filename (no Kieker log): " + inputDirFn);
 				notInitializesReaders++;
@@ -147,6 +171,24 @@ public class FSReader extends AbstractReaderPlugin implements IMonitoringRecordR
 		return true;
 	}
 
+	@Override
+	public long getNumMaximumTasks() {
+		long sum = 0;
+		for (IProgressable p : this.progressables) {
+			sum += p.getNumMaximumTasks();
+		}
+		return sum;
+	}
+
+	@Override
+	public long getNumCompletedTasks() {
+		long sum = 0;
+		for (IProgressable p : this.progressables) {
+			sum += p.getNumCompletedTasks();
+		}
+		return sum;
+	}
+
 	/**
 	 * {@inheritDoc}
 	 */
@@ -173,7 +215,8 @@ public class FSReader extends AbstractReaderPlugin implements IMonitoringRecordR
 	public Configuration getCurrentConfiguration() {
 		final Configuration configuration = new Configuration();
 		configuration.setProperty(CONFIG_PROPERTY_NAME_INPUTDIRS, Configuration.toProperty(this.inputDirs));
-		configuration.setProperty(CONFIG_PROPERTY_NAME_IGNORE_UNKNOWN_RECORD_TYPES, Boolean.toString(this.ignoreUnknownRecordTypes));
+		configuration.setProperty(CONFIG_PROPERTY_NAME_IGNORE_UNKNOWN_RECORD_TYPES,
+				Boolean.toString(this.ignoreUnknownRecordTypes));
 		return configuration;
 	}
 
