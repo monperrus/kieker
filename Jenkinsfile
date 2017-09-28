@@ -96,7 +96,14 @@ pipeline {
 
     stage('Release Check Extended') {
       when {
-        branch 'master'
+        anyOf {
+	  // Run extended check if we are in master branch..
+            branch 'master';
+          // or in a Pull Request
+	    expression {
+		env.CHANGE_TARGET != null;
+	    }
+	}
       }
       steps {
         echo "We are in master - executing the extended release archive check."
