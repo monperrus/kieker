@@ -65,16 +65,13 @@ public class JMXReader extends AbstractProducerStage<IMonitoringRecord> implemen
 	}
 
 	@Override
-	public void onTerminating() throws Exception {
-		this.readerLogic.terminate();
-		super.onTerminating();
-	}
-
-	@Override
 	public void handleNotification(Notification notification, Object handback) {
+		System.out.println("JMXReader.handleNotification(): " + notification);
 		final Object data = notification.getUserData();
 		if (data instanceof IMonitoringRecord) {
 			this.deliverRecord((IMonitoringRecord) data);
+		} else {
+			this.logger.debug("notification={}, data={}", notification, data);
 		}
 	}
 

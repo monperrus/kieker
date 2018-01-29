@@ -52,6 +52,9 @@ public class JMXReaderLogic {
 
 	private final Log log;
 	private final NotificationListener listener;
+	
+	private JMXConnector jmx;
+	private MBeanServerConnection connection;
 
 	/**
 	 * Creates a new instance of this class using the given parameters.
@@ -106,16 +109,31 @@ public class JMXReaderLogic {
 	}
 
 	public final boolean read() {
+		// JMXConnector jmx;
+		// try {
+		// jmx = JMXConnectorFactory.connect(this.serviceURL);
+		//
+		// MBeanServerConnection connection = jmx.getMBeanServerConnection();
+		//
+		//// connection.addNotificationListener(this.monitoringLog,
+		// logNotificationListener, null, null);
+		//
+		// jmx.close();
+		// } catch (IOException e) {
+		// throw new IllegalStateException(e);
+		// }
+		//
+		// return true;
+
 		if (this.silentreconnect) {
 			return this.read2();
 		}
 		boolean ret = true;
-		JMXConnector jmx = null;
-		MBeanServerConnection connection = null;
 		ServerNotificationListener serverNotificationListener = null;
 		NotificationListener logNotificationListener = null;
+
 		try {
-			// Connect to the Server
+			// Connect to the registry
 			try {
 				jmx = JMXConnectorFactory.connect(this.serviceURL);
 			} catch (final IOException ex) {
@@ -134,53 +152,62 @@ public class JMXReaderLogic {
 			this.log.info("Connected to JMX Server, ID: " + jmx.getConnectionId());
 
 			// Waiting
-			this.block();
-
-			// Shutdown
-			this.log.info("Shutting down JMXReader");
+//			this.block();
+//
+//			// Shutdown
+//			this.log.info("Shutting down JMXReader");
 		} catch (final InstanceNotFoundException ex) {
-			this.log.error("No monitoring log found: " + this.monitoringLog.toString()); // ok to ignore ex here
+			this.log.error("No monitoring log found: " + this.monitoringLog.toString());
+			// ok to ignore ex here
 			ret = false;
 		} catch (final Exception ex) { // NOPMD NOCS (IllegalCatchCheck)
 			this.log.error("Error in JMX connection!", ex);
 			ret = false;
 		} finally {
-			try {
-				if (logNotificationListener != null) {
-					connection.removeNotificationListener(this.monitoringLog, logNotificationListener);
-				}
-			} catch (final Exception e) { // NOPMD NOCS (IllegalCatchCheck)
-				if (this.log.isDebugEnabled()) {
-					this.log.debug("Failed to remove Listener!", e);
-				}
-			}
-			try {
-				if (serverNotificationListener != null) {
-					jmx.removeConnectionNotificationListener(serverNotificationListener);
-				}
-			} catch (final ListenerNotFoundException e) {
-				if (this.log.isDebugEnabled()) {
-					this.log.debug("Failed to remove Listener!", e);
-				}
-			}
-			try {
-				if (jmx != null) {
-					jmx.close();
-				}
-			} catch (final Exception e) { // NOCS (IllegalCatchCheck) // NOPMD
-				if (this.log.isDebugEnabled()) {
-					this.log.debug("Failed to close JMX connection!", e);
-				}
-			}
+//			try {
+//				if (logNotificationListener != null) {
+//					connection.removeNotificationListener(this.monitoringLog, logNotificationListener);
+//				}
+//			} catch (final Exception e) { // NOPMD NOCS (IllegalCatchCheck)
+//				if (this.log.isDebugEnabled()) {
+//					this.log.debug("Failed to remove Listener!", e);
+//				}
+//			}
+//			try {
+//				if (serverNotificationListener != null) {
+//					jmx.removeConnectionNotificationListener(serverNotificationListener);
+//				}
+//			} catch (final ListenerNotFoundException e) {
+//				if (this.log.isDebugEnabled()) {
+//					this.log.debug("Failed to remove Listener!", e);
+//				}
+//			}
+//			try {
+//				if (jmx != null) {
+//					jmx.close();
+//				}
+//			} catch (final Exception e) { // NOCS (IllegalCatchCheck) // NOPMD
+//				if (this.log.isDebugEnabled()) {
+//					this.log.debug("Failed to close JMX connection!", e);
+//				}
+//			}
 		}
 		return ret;
 	}
 
+	public MBeanServerConnection getConnection() {
+		return connection;
+	}
+	
+	public JMXConnector getJmx() {
+		return jmx;
+	}
+	
 	@SuppressFBWarnings("DE_MIGHT_IGNORE")
 	private final boolean read2() {
 		while (true) {
 			JMXConnector jmx = null;
-			MBeanServerConnection mbServer = null;
+			MBeanServerConnection connection = null;
 			ServerNotificationListener serverNotificationListener = null;
 			NotificationListener logNotificationListener = null;
 			try {
@@ -193,9 +220,9 @@ public class JMXReaderLogic {
 				}
 				serverNotificationListener = new ServerNotificationListener();
 				jmx.addConnectionNotificationListener(serverNotificationListener, null, null);
-				mbServer = jmx.getMBeanServerConnection();
+				connection = jmx.getMBeanServerConnection();
 				logNotificationListener = this.listener;
-				mbServer.addNotificationListener(this.monitoringLog, logNotificationListener, null, null);
+				connection.addNotificationListener(this.monitoringLog, logNotificationListener, null, null);
 				this.log.info("Connected to JMX Server, ID: " + jmx.getConnectionId());
 
 				// Waiting
@@ -210,7 +237,7 @@ public class JMXReaderLogic {
 			} finally {
 				try {
 					if (logNotificationListener != null) {
-						mbServer.removeNotificationListener(this.monitoringLog, logNotificationListener);
+						connection.removeNotificationListener(this.monitoringLog, logNotificationListener);
 					}
 				} catch (final Exception e) { // ignore // NOPMD NOCS (IllegalCatchCheck)
 				}
@@ -233,15 +260,16 @@ public class JMXReaderLogic {
 
 	private final void block() {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
-
 			@Override
 			public final void run() {
 				JMXReaderLogic.this.unblock();
 			}
 		});
+
 		try {
 			this.cdLatch.await();
-		} catch (final InterruptedException e) { // ignore
+		} catch (final InterruptedException e) {
+			throw new IllegalStateException(e);
 		}
 	}
 
