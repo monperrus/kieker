@@ -53,7 +53,7 @@ pipeline {
         }
       }**/
       steps {
-        sh $DOCKER_INIT + $DOCKER_IMAGE + ":" + $DOCKER_LABEL + $DOCKER_BASH + "\"cd /opt/kieker; ./gradlew -S compileJava compileTestJava\""
+        sh DOCKER_INIT + DOCKER_IMAGE + ':' + DOCKER_LABEL + DOCKER_BASH + '"cd /opt/kieker; ./gradlew -S compileJava compileTestJava"'
         //sh './kieker/gradlew -S -p kieker compileJava compileTestJava'
         //stash 'everything'
       }
