@@ -54,7 +54,8 @@ pipeline {
         }
       }**/
       steps {
-        sh DOCKER_INIT + " -u `id -u` " + DOCKER_ARGS +  DOCKER_IMAGE + ':' + DOCKER_LABEL + DOCKER_BASH + '"cd /opt/kieker; ./gradlew -S compileJava compileTestJava"'
+        sh 'UID=`id -u`'
+        sh DOCKER_INIT + " $UID " + DOCKER_ARGS +  DOCKER_IMAGE + ':' + DOCKER_LABEL + DOCKER_BASH + '"cd /opt/kieker; ./gradlew -S compileJava compileTestJava"'
         //sh './kieker/gradlew -S -p kieker compileJava compileTestJava'
         //stash 'everything'
       }
