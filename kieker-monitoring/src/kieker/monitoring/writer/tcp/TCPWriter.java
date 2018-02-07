@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Kieker Project (http://kieker-monitoring.net)
+ * Copyright 2017 Kieker Project (http://kieker-monitoring.net)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ import kieker.monitoring.writer.WriterUtil;
 /**
  * @author "Christian Wulf"
  *
- * @deprecated 1.13. Use {@link DualSocketTcpWriter} instead.
+ * @deprecated since 1.13 (to be removed in 1.14) Use {@link DualSocketTcpWriter} instead.
  *
  * @since unknown
  */

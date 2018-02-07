@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Kieker Project (http://kieker-monitoring.net)
+ * Copyright 2017 Kieker Project (http://kieker-monitoring.net)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ public class JmxWriter extends AbstractMonitoringWriter {
 	private final String configDomain;
 	private final String configLogname;
 
-	private KiekerJMXMonitoringLog kiekerJMXMonitoringLog;
+	private KiekerJmxMonitoringLog kiekerJmxMonitoringLog;
 	private ObjectName monitoringLogName;
 
 	public JmxWriter(final Configuration configuration) {
@@ -58,16 +58,16 @@ public class JmxWriter extends AbstractMonitoringWriter {
 		try {
 			String domain = this.configDomain;
 			if ("".equals(domain)) {
-				domain = MonitoringController.getInstance().getJMXDomain();
+				domain = MonitoringController.getInstance().getControllerDomain();
 			}
 			this.monitoringLogName = new ObjectName(domain, "type", this.configLogname);
 		} catch (final MalformedObjectNameException ex) {
 			throw new IllegalArgumentException("The generated ObjectName is not correct! Check the following configuration values '" + CONFIG_DOMAIN
 					+ "=" + this.configDomain + "' and '" + CONFIG_LOGNAME + "=" + this.configLogname + "'", ex);
 		}
-		this.kiekerJMXMonitoringLog = new KiekerJMXMonitoringLog(this.monitoringLogName);
+		this.kiekerJmxMonitoringLog = new KiekerJmxMonitoringLog(this.monitoringLogName);
 		try {
-			ManagementFactory.getPlatformMBeanServer().registerMBean(this.kiekerJMXMonitoringLog, this.monitoringLogName);
+			ManagementFactory.getPlatformMBeanServer().registerMBean(this.kiekerJmxMonitoringLog, this.monitoringLogName);
 		} catch (final Exception ex) { // NOPMD NOCS (IllegalCatchCheck)
 			throw new IllegalStateException("Failed to inititialize JmxWriter.", ex);
 		}
@@ -75,7 +75,7 @@ public class JmxWriter extends AbstractMonitoringWriter {
 
 	@Override
 	public void writeMonitoringRecord(final IMonitoringRecord record) {
-		this.kiekerJMXMonitoringLog.newMonitoringRecord(record);
+		this.kiekerJmxMonitoringLog.newMonitoringRecord(record);
 	}
 
 	@Override

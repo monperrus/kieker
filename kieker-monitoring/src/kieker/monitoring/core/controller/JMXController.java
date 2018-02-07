@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Kieker Project (http://kieker-monitoring.net)
+ * Copyright 2017 Kieker Project (http://kieker-monitoring.net)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ import kieker.monitoring.core.configuration.ConfigurationFactory;
  * 
  * @since 1.4
  */
-public final class JMXController extends AbstractController implements IJMXController {
+public final class JMXController extends AbstractController implements IRemoteController {
 	static final Log LOG = LogFactory.getLog(JMXController.class); // NOPMD package for inner class
 
 	private final boolean jmxEnabled;
@@ -191,7 +191,7 @@ public final class JMXController extends AbstractController implements IJMXContr
 	}
 
 	@Override
-	public final String getJMXDomain() {
+	public final String getControllerDomain() {
 		return this.domain;
 	}
 

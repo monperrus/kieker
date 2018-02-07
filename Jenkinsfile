@@ -1,16 +1,7 @@
 #!/usr/bin/env groovy
 
 pipeline {
-  agent {
-    //node {
-      label 'kieker-slave-docker'
-    //}
-  }
  
-  environment {
-    DOCKER_BASE = "docker run --rm -v ${env.WORKSPACE}:/opt/kieker kieker/kieker-build:openjdk7 /bin/bash -c "
-  }
-  
   //triggers {
   //  cron{}
   //}
@@ -31,12 +22,6 @@ pipeline {
       }
     }
 
-    stage('Clean workspace') {
-      steps {
-        deleteDir()
-      }
-    }
-    
     stage('Checkout') {
       steps {
         checkout scm
@@ -47,7 +32,7 @@ pipeline {
       agent {
         docker {
           reuseNode true 
-          image 'kieker/kieker-build:openjdk7'
+          image 'kieker/kieker-build:openjdk7-small'
           args ' --rm -v ${env.WORKSPACE}:/opt/kieker'
           label 'kieker-slave-docker'
         }
@@ -74,7 +59,7 @@ pipeline {
         )
       }
     }
-**/
+
     stage('Unit Test') {
       steps {
         sh DOCKER_BASE + '"cd /opt/kieker; ./gradlew -S test"'
@@ -96,14 +81,7 @@ pipeline {
 
     stage('Release Check Extended') {
       when {
-        anyOf {
-	  // Run extended check if we are in master branch..
-            branch 'master';
-          // or in a Pull Request
-	    expression {
-		env.CHANGE_TARGET != null;
-	    }
-	}
+        branch 'master'
       }
       steps {
         echo "We are in master - executing the extended release archive check."
@@ -126,20 +104,19 @@ pipeline {
     //  }
     //}
   }
-
+**/
   post {
     always {
-      sh 'docker run --rm -v ' + env.WORKSPACE + ':/opt/kieker alpine /bin/sh -c "chmod -R ugo+rwx /opt/kieker"'
       deleteDir()
     }
    
     changed {
-      mail to: 'ci@kieker-monitoring.net', subject: 'Pipeline outcome has changed.', body: 'no text'
+      //mail to: 'ci@kieker-monitoring.net', subject: 'Pipeline outcome has changed.', body: 'no text'
     }
 
 
     failure {
-      mail to: 'ci@kieker-monitoring.net', subject: 'Pipeline build failed.', body: 'no text'
+      //mail to: 'ci@kieker-monitoring.net', subject: 'Pipeline build failed.', body: 'no text'
     }
   
     //success {
@@ -149,3 +126,4 @@ pipeline {
     //}
   }
 }
+
