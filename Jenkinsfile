@@ -9,7 +9,8 @@ pipeline {
   environment {
     DOCKER_IMAGE = 'kieker/kieker-build'
     DOCKER_LABEL = 'openjdk7-small'
-    DOCKER_INIT  = "docker run --rm -u $(id -u) -v ${env.WORKSPACE}:/opt/kieker "
+    DOCKER_INIT  = 'docker run 
+    DOCKER_ARGS  = '--rm -v ${env.WORKSPACE}:/opt/kieker '
     DOCKER_BASH  = ' /bin/bash -c '
   }
 
@@ -53,7 +54,7 @@ pipeline {
         }
       }**/
       steps {
-        sh DOCKER_INIT + DOCKER_IMAGE + ':' + DOCKER_LABEL + DOCKER_BASH + '"cd /opt/kieker; ./gradlew -S compileJava compileTestJava"'
+        sh DOCKER_INIT + " -u `id -u` " + DOCKER_ARGS +  DOCKER_IMAGE + ':' + DOCKER_LABEL + DOCKER_BASH + '"cd /opt/kieker; ./gradlew -S compileJava compileTestJava"'
         //sh './kieker/gradlew -S -p kieker compileJava compileTestJava'
         //stash 'everything'
       }
