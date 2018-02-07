@@ -103,8 +103,9 @@ pipeline {
     //  steps {         
     //  }
     //}
+    **/
   }
-**/
+
   post {
     always {
       deleteDir()
