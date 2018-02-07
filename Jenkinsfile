@@ -2,7 +2,9 @@
 
 pipeline {
 
-  agent any
+  agent {
+    label 'kieker-slave-docker'
+  } 
  
   //triggers {
   //  cron{}
