@@ -1,6 +1,10 @@
 #!/usr/bin/env groovy
 
 pipeline {
+
+  agent {
+    any
+  }
  
   //triggers {
   //  cron{}
@@ -111,14 +115,14 @@ pipeline {
       deleteDir()
     }
    
-    changed {
+    //changed {
       //mail to: 'ci@kieker-monitoring.net', subject: 'Pipeline outcome has changed.', body: 'no text'
-    }
+    //}
 
 
-    failure {
+    //failure {
       //mail to: 'ci@kieker-monitoring.net', subject: 'Pipeline build failed.', body: 'no text'
-    }
+    //}
   
     //success {
     //}
