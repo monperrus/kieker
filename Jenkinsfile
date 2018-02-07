@@ -9,7 +9,7 @@ pipeline {
   environment {
     DOCKER_IMAGE = 'kieker/kieker-build'
     DOCKER_LABEL = 'openjdk7-small'
-    DOCKER_INIT  = 'docker run --rm -u $(id -u) -v ${env.WORKSPACE}:/opt/kieker '
+    DOCKER_INIT  = "docker run --rm -u $(id -u) -v ${env.WORKSPACE}:/opt/kieker "
     DOCKER_BASH  = ' /bin/bash -c '
   }
 
