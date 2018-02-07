@@ -5,6 +5,14 @@ pipeline {
   agent {
     label 'kieker-slave-docker'
   } 
+
+  environment {
+    DOCKER_IMAGE = 'kieker/kieker-build'
+    DOCKER_LABEL = 'openjdk7-small'
+    DOCKER_INIT  = 'docker run --rm -u `id -u` -v ${env.WORKSPACE}:/opt/kieker '
+    DOCKER_BASH  = ' /bin/bash -c '
+  }
+
  
   //triggers {
   //  cron{}
@@ -33,16 +41,20 @@ pipeline {
     }
 
     stage('Compile') {
+      
+      // Can't be used due to bug: https://stackoverflow.com/questions/46385542/jenkinsfile-docker-agent-step-dies-after-1-second
+      /**
       agent {
         docker {
           reuseNode true 
           image 'kieker/kieker-build:openjdk7-small'
-          args ' --rm -v ${env.WORKSPACE}:/opt/kieker'
+          args ' --rm -u `id -u` -v ${env.WORKSPACE}:/opt/kieker'
           label 'kieker-slave-docker'
         }
-      }
+      }**/
       steps {
-        sh './kieker/gradlew -S -p kieker compileJava compileTestJava'
+        sh $DOCKER_INIT + $DOCKER_IMAGE + ":" + $DOCKER_LABEL + $DOCKER_BASH + "\"cd /opt/kieker; ./gradlew -S compileJava compileTestJava\""
+        //sh './kieker/gradlew -S -p kieker compileJava compileTestJava'
         //stash 'everything'
       }
     }
