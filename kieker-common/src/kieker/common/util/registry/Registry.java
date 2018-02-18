@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Kieker Project (http://kieker-monitoring.net)
+ * Copyright 2017 Kieker Project (http://kieker-monitoring.net)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,11 @@ public final class Registry<E> implements IRegistry<E> {
 	private static final int MAXIMUM_CAPACITY = 1 << 30;
 
 	/**
+	 * ID of this registry.
+	 */
+	private final long id;
+
+	/**
 	 * Mask value for indexing into segments. The upper bits of a key's hash code are used to choose the segment.
 	 */
 	private final int segmentMask;
@@ -74,6 +79,8 @@ public final class Registry<E> implements IRegistry<E> {
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public Registry() {
+		this.id = RegistryUtil.generateId();
+
 		// Find power-of-two sizes best matching arguments
 		int sshift = 0;
 		int ssize = 1;
@@ -118,11 +125,16 @@ public final class Registry<E> implements IRegistry<E> {
 		return h ^ (h >>> 16);
 	}
 
+	@Override
+	public long getId() {
+		return this.id;
+	}
+
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public final void setRecordReceiver(final IMonitoringRecordReceiver recordReceiver) {
+	public final void setRecordReceiver(final IRegistryRecordReceiver recordReceiver) {
 		for (final Segment<E> segment : this.segments) {
 			segment.setRecordReceiver(recordReceiver);
 		}
@@ -134,14 +146,16 @@ public final class Registry<E> implements IRegistry<E> {
 	@Override
 	public final int get(final E value) {
 		final int hash = Registry.hash(value);
-		return this.segments[(hash >>> this.segmentShift) & this.segmentMask].get(value, hash, this.nextId);
+		final int index = (hash >>> this.segmentShift) & this.segmentMask;
+		final Segment<E> segment = this.segments[index];
+		return segment.get(value, hash, this.nextId);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public final E get(final int id) {
+	public final E get(final int id) { // NOCS Ignore hiding of field ID
 		final int capacity = this.nextId.get();
 		if (id > capacity) {
 			return null;
@@ -159,7 +173,10 @@ public final class Registry<E> implements IRegistry<E> {
 
 	/**
 	 * {@inheritDoc}
+	 *
+	 * @deprecated since 1.13 (to be removed in 1.14): Do not iterate through the registry.
 	 */
+	@Deprecated
 	@Override
 	public final E[] getAll() {
 		final int capacity = this.nextId.get();
@@ -171,6 +188,8 @@ public final class Registry<E> implements IRegistry<E> {
 			}
 			this.eArrayCached = eArray; // volatile write
 		}
+		// HINT for (String s:registry.getAll()) leads to a ClassCastException (chw 15.06.2016)
+		// since iterable is of type Object, not String
 		return Arrays.copyOf(this.eArrayCached, capacity);
 	}
 
@@ -272,7 +291,7 @@ public final class Registry<E> implements IRegistry<E> {
 		/**
 		 * Send messages on new entries to this.
 		 */
-		private transient IMonitoringRecordReceiver recordReceiver;
+		private transient IRegistryRecordReceiver recordReceiver;
 
 		@SuppressWarnings({ "unchecked", "rawtypes" })
 		protected Segment(final int initialCapacity, final double lf) {
@@ -281,7 +300,7 @@ public final class Registry<E> implements IRegistry<E> {
 			this.count = 0;
 		}
 
-		protected final void setRecordReceiver(final IMonitoringRecordReceiver recordReceiver) {
+		protected final void setRecordReceiver(final IRegistryRecordReceiver recordReceiver) {
 			this.lock();
 			try {
 				this.recordReceiver = recordReceiver;
@@ -342,7 +361,7 @@ public final class Registry<E> implements IRegistry<E> {
 						tab[index] = new HashEntry<E>(value, hash, id, first);
 						this.count = c; // write-volatile
 						if (this.recordReceiver != null) { // NOPMD NOCS (nested if)
-							this.recordReceiver.newMonitoringRecord(new RegistryRecord(id, (String) value));
+							this.recordReceiver.newRegistryRecord(new RegistryRecord(id, (String) value));
 						}
 						return id; // return new id
 					}
@@ -445,4 +464,5 @@ public final class Registry<E> implements IRegistry<E> {
 			this.table = newTable;
 		}
 	}
+
 }

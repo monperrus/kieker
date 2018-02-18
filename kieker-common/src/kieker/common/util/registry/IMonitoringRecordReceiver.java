@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Kieker Project (http://kieker-monitoring.net)
+ * Copyright 2017 Kieker Project (http://kieker-monitoring.net)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,21 +19,22 @@ package kieker.common.util.registry;
 import kieker.common.record.IMonitoringRecord;
 
 /**
+ *
  * @author Andre van Hoorn
- * 
+ *
  * @since 1.5
  */
 public interface IMonitoringRecordReceiver {
 
 	/**
 	 * Called for each new record.
-	 * 
+	 *
 	 * Notice, that this method should not throw an exception, but indicate an error by the return value false.
-	 * 
+	 *
 	 * @param record
 	 *            the record.
 	 * @return true on success; false in case of an error.
-	 * 
+	 *
 	 * @since 1.5
 	 */
 	public abstract boolean newMonitoringRecord(IMonitoringRecord record);

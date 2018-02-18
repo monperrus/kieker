@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Kieker Project (http://kieker-monitoring.net)
+ * Copyright 2017 Kieker Project (http://kieker-monitoring.net)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,12 @@ package kieker.monitoring.core.controller;
 
 /**
  * @author Jan Waller, Robert von Massow
- * 
+ *
  * @since 1.3
  */
 public interface IMonitoringController extends
-		IJMXController,
+		IRemoteController,
 		IProbeController,
-		IRegistryController,
 		ISamplingController,
 		IStateController,
 		ITimeSourceController,
@@ -33,9 +32,9 @@ public interface IMonitoringController extends
 	/**
 	 * This method is used to log the status of the controllers to the console.
 	 * It is included in this interface to ensure its publication over JMX.
-	 * 
+	 *
 	 * @return a String representation of the current controller
-	 * 
+	 *
 	 * @since 1.3
 	 */
 	@Override
@@ -45,10 +44,19 @@ public interface IMonitoringController extends
 	 * This method is used to log the status of the controllers to the configured writer.
 	 * The {@link kieker.common.record.misc.KiekerMetadataRecord} record is used.
 	 * This method is automatically executed for the first record sent.
-	 * 
+	 *
 	 * @return true if successful
-	 * 
+	 *
 	 * @since 1.7
 	 */
 	public boolean sendMetadataAsRecord();
+
+	/**
+	 * This method returns the application name stored in the controller.
+	 *
+	 * @return the application name
+	 *
+	 * @since 1.14
+	 */
+	public String getApplicationName();
 }

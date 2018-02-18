@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Kieker Project (http://kieker-monitoring.net)
+ * Copyright 2017 Kieker Project (http://kieker-monitoring.net)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import kieker.common.logging.LogFactory;
 import kieker.common.record.IMonitoringRecord;
 import kieker.common.record.factory.CachedRecordFactoryCatalog;
 import kieker.common.record.factory.IRecordFactory;
+import kieker.common.record.io.BinaryValueDeserializer;
 import kieker.common.record.misc.RegistryRecord;
 import kieker.common.util.registry.ILookup;
 import kieker.common.util.registry.Lookup;
@@ -47,16 +48,12 @@ import kieker.common.util.registry.Lookup;
  *
  * @since 1.8
  */
-@Plugin(description = "A reader which reads records from a TCP port",
-		outputPorts = {
-			@OutputPort(name = TCPReader.OUTPUT_PORT_NAME_RECORDS, eventTypes = { IMonitoringRecord.class }, description = "Output Port of the TCPReader")
-		},
-		configuration = {
-			@Property(name = TCPReader.CONFIG_PROPERTY_NAME_PORT1, defaultValue = "10133",
-					description = "The first port of the server used for the TCP connection."),
-			@Property(name = TCPReader.CONFIG_PROPERTY_NAME_PORT2, defaultValue = "10134",
-					description = "The second port of the server used for the TCP connection.")
-		})
+@Plugin(description = "A reader which reads records from a TCP port", outputPorts = {
+	@OutputPort(name = TCPReader.OUTPUT_PORT_NAME_RECORDS, eventTypes = { IMonitoringRecord.class }, description = "Output Port of the TCPReader")
+}, configuration = {
+	@Property(name = TCPReader.CONFIG_PROPERTY_NAME_PORT1, defaultValue = "10133", description = "The first port of the server used for the TCP connection."),
+	@Property(name = TCPReader.CONFIG_PROPERTY_NAME_PORT2, defaultValue = "10134", description = "The second port of the server used for the TCP connection.")
+})
 public final class TCPReader extends AbstractReaderPlugin {
 
 	/** The name of the output port delivering the received records. */
@@ -71,7 +68,8 @@ public final class TCPReader extends AbstractReaderPlugin {
 
 	private volatile Thread readerThread;
 	private volatile TCPStringReader tcpStringReader;
-	private volatile boolean terminated = false; // NOPMD
+	private volatile boolean terminated;
+
 	private final int port1;
 	private final int port2;
 	private final ILookup<String> stringRegistry = new Lookup<String>();
@@ -150,7 +148,7 @@ public final class TCPReader extends AbstractReaderPlugin {
 				// final IMonitoringRecord record = AbstractMonitoringRecord.createFromByteBuffer(clazzid, buffer, this.stringRegistry);
 			final String recordClassName = this.stringRegistry.get(clazzId);
 			final IRecordFactory<? extends IMonitoringRecord> recordFactory = this.cachedRecordFactoryCatalog.get(recordClassName);
-			final IMonitoringRecord record = recordFactory.create(buffer, this.stringRegistry);
+			final IMonitoringRecord record = recordFactory.create(BinaryValueDeserializer.create(buffer, this.stringRegistry));
 			record.setLoggingTimestamp(loggingTimestamp);
 
 			super.deliver(OUTPUT_PORT_NAME_RECORDS, record);
@@ -194,7 +192,7 @@ class TCPStringReader extends Thread {
 
 	private final int port;
 	private final ILookup<String> stringRegistry;
-	private volatile boolean terminated = false; // NOPMD
+	private volatile boolean terminated;
 	private volatile Thread readerThread;
 
 	public TCPStringReader(final int port, final ILookup<String> stringRegistry) {

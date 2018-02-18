@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Kieker Project (http://kieker-monitoring.net)
+ * Copyright 2017 Kieker Project (http://kieker-monitoring.net)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,69 +18,76 @@ package kieker.common.util.registry;
 
 /**
  * A generic interface to assign unique IDs to objects.
- * 
+ *
  * @param <E>
  *            the type of the objects
- * 
+ *
  * @author Jan Waller
- * 
+ *
  * @since 1.5
  */
 public interface IRegistry<E> {
 
 	/**
+	 * Gets the ID of this registry.
+	 *
+	 * @return The registry's ID
+	 *
+	 * @since 1.13
+	 */
+	public long getId();
+
+	/**
 	 * Gets a unique id for an object.
-	 * 
+	 *
 	 * @param value
 	 *            the object
 	 * @return
-	 *         the unique id
-	 * 
+	 * 		the unique id
+	 *
 	 * @since 1.5
 	 */
 	public int get(E value);
 
 	/**
 	 * Gets the object associated with the unique id.
-	 * 
+	 *
 	 * @param i
 	 *            the unique id
 	 * @return
-	 *         the associated object
-	 * 
+	 * 		the associated object
+	 *
 	 * @since 1.5
 	 */
 	public E get(int i);
 
 	/**
 	 * Return an array with all registered objects.
-	 * 
+	 *
 	 * @return
-	 *         array of registered objects
-	 * 
+	 * 		array of registered objects
+	 *
 	 * @since 1.5
 	 */
 	public E[] getAll();
 
 	/**
 	 * Returns the number of registered objects.
-	 * 
+	 *
 	 * @return
-	 *         number of registered objects
-	 * 
+	 * 		number of registered objects
+	 *
 	 * @since 1.5
 	 */
 	public int getSize();
 
 	/**
 	 * Enables logging of newly registered objects.
-	 * 
-	 * Must only be called for E == String
-	 * 
-	 * @param recordReceiver
-	 *            the IMonitoringRecordReceiver logged to
-	 * 
+	 *
+	 * @param registryRecordReceiver
+	 *            the IRegistryRecordReceiver logged to
+	 *
 	 * @since 1.5
 	 */
-	public void setRecordReceiver(final IMonitoringRecordReceiver recordReceiver);
+	public void setRecordReceiver(final IRegistryRecordReceiver registryRecordReceiver);
 }

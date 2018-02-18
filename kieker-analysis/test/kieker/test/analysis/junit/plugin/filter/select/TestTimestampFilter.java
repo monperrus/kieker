@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Kieker Project (http://kieker-monitoring.net)
+ * Copyright 2017 Kieker Project (http://kieker-monitoring.net)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package kieker.test.analysis.junit.plugin.filter.select;
 
 import java.nio.BufferOverflowException;
-import java.nio.ByteBuffer;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -31,15 +30,16 @@ import kieker.analysis.plugin.filter.select.TimestampFilter;
 import kieker.analysis.plugin.reader.list.ListReader;
 import kieker.common.configuration.Configuration;
 import kieker.common.record.flow.trace.AbstractTraceEvent;
+import kieker.common.record.io.IValueSerializer;
 import kieker.common.util.registry.IRegistry;
 
 import kieker.test.common.junit.AbstractKiekerTest;
 
 /**
  * A test for the class {@link TimestampFilter}.
- * 
+ *
  * @author Andre van Hoorn, Jan Waller
- * 
+ *
  * @since 1.5
  */
 public final class TestTimestampFilter extends AbstractKiekerTest {
@@ -58,7 +58,12 @@ public final class TestTimestampFilter extends AbstractKiekerTest {
 		}
 
 		@Override
-		public void writeBytes(final ByteBuffer buffer, final IRegistry<String> stringRegistry) throws BufferOverflowException {
+		public void registerStrings(final IRegistry<String> stringRegistry) {
+			// not used here
+		}
+
+		@Override
+		public void serialize(final IValueSerializer serializer) throws BufferOverflowException {
 			// not used here
 		}
 
@@ -66,6 +71,12 @@ public final class TestTimestampFilter extends AbstractKiekerTest {
 		public int getSize() {
 			return 8 + 8 + 4;
 		}
+
+		@Override
+		public String[] getValueNames() {
+			return new String[] { "timestamp", "traceId", "orderIndex" };
+		}
+
 	};
 
 	private ListReader<AbstractTraceEvent> reader;
@@ -82,7 +93,7 @@ public final class TestTimestampFilter extends AbstractKiekerTest {
 	/**
 	 * Creates a {@link TimestampFilter} with the given properties
 	 * using the constructor {@link TimestampFilter#TimestampFilter(kieker.common.configuration.Configuration, java.util.Map)}.
-	 * 
+	 *
 	 * @param ignoreExecutionsBeforeTimestamp
 	 * @param ignoreExecutionsAfterTimestamp
 	 * @return
@@ -114,7 +125,7 @@ public final class TestTimestampFilter extends AbstractKiekerTest {
 	/**
 	 * Given a {@link TimestampFilter} selecting {@link AbstractTraceEvent}s within an interval <i>[a,b]</i>,
 	 * assert that a {@link AbstractTraceEvent} <i>e</i> with <i>e.timestamp &lt; a</i> does not pass the filter.
-	 * 
+	 *
 	 * @throws AnalysisConfigurationException
 	 *             If the internally assembled analysis configuration is somehow invalid.
 	 * @throws IllegalStateException
@@ -129,8 +140,7 @@ public final class TestTimestampFilter extends AbstractKiekerTest {
 		this.reader.addObject(TestTimestampFilter.EVENT);
 		this.controller.run();
 		Assert.assertEquals(AnalysisController.STATE.TERMINATED, this.controller.getState());
-		Assert.assertTrue("Filter passed event " + TestTimestampFilter.EVENT + " although timestamp before " + leftBorder
-				, this.sinkPlugin.getList().isEmpty());
+		Assert.assertTrue("Filter passed event " + TestTimestampFilter.EVENT + " although timestamp before " + leftBorder, this.sinkPlugin.getList().isEmpty());
 
 	}
 
@@ -138,7 +148,7 @@ public final class TestTimestampFilter extends AbstractKiekerTest {
 	 * Given a {@link TimestampFilter} selecting {@link AbstractTraceEvent}s within an interval <i>[a,b]</i>,
 	 * assert that a {@link AbstractTraceEvent} <i>e</i> with <i>e.timestamp &gt; b </i> does not
 	 * pass the filter.
-	 * 
+	 *
 	 * @throws AnalysisConfigurationException
 	 *             If the internally assembled analysis configuration is somehow invalid.
 	 * @throws IllegalStateException
@@ -153,14 +163,13 @@ public final class TestTimestampFilter extends AbstractKiekerTest {
 		this.reader.addObject(TestTimestampFilter.EVENT);
 		this.controller.run();
 		Assert.assertEquals(AnalysisController.STATE.TERMINATED, this.controller.getState());
-		Assert.assertTrue("Filter passed event " + TestTimestampFilter.EVENT + " although timestamp before " + leftBorder
-				, this.sinkPlugin.getList().isEmpty());
+		Assert.assertTrue("Filter passed event " + TestTimestampFilter.EVENT + " although timestamp before " + leftBorder, this.sinkPlugin.getList().isEmpty());
 	}
 
 	/**
 	 * Given a {@link TimestampFilter} selecting {@link AbstractTraceEvent}s within an interval <i>[a,b]</i>,
 	 * assert that an event <i>e</i> with <i>e.timestamp == a</i> does pass the filter.
-	 * 
+	 *
 	 * @throws AnalysisConfigurationException
 	 *             If the internally assembled analysis configuration is somehow invalid.
 	 * @throws IllegalStateException
@@ -175,8 +184,8 @@ public final class TestTimestampFilter extends AbstractKiekerTest {
 		this.reader.addObject(TestTimestampFilter.EVENT);
 		this.controller.run();
 		Assert.assertEquals(AnalysisController.STATE.TERMINATED, this.controller.getState());
-		Assert.assertFalse("Filter ignored event " + TestTimestampFilter.EVENT + " although timestamp on left Border " + leftBorder
-				, this.sinkPlugin.getList().isEmpty());
+		Assert.assertFalse("Filter ignored event " + TestTimestampFilter.EVENT + " although timestamp on left Border " + leftBorder,
+				this.sinkPlugin.getList().isEmpty());
 		Assert.assertTrue(this.sinkPlugin.getList().size() == 1);
 		Assert.assertSame(this.sinkPlugin.getList().get(0), TestTimestampFilter.EVENT);
 	}
@@ -184,7 +193,7 @@ public final class TestTimestampFilter extends AbstractKiekerTest {
 	/**
 	 * Given a {@link TimestampFilter} selecting {@link AbstractTraceEvent}s within an interval <i>[a,b]</i>,
 	 * assert that an event <i>e</i> with <i>e.timestamp == b</i> does pass the filter.
-	 * 
+	 *
 	 * @throws AnalysisConfigurationException
 	 *             If the internally assembled analysis configuration is somehow invalid.
 	 * @throws IllegalStateException
@@ -199,8 +208,8 @@ public final class TestTimestampFilter extends AbstractKiekerTest {
 		this.reader.addObject(TestTimestampFilter.EVENT);
 		this.controller.run();
 		Assert.assertEquals(AnalysisController.STATE.TERMINATED, this.controller.getState());
-		Assert.assertFalse("Filter ignored event " + TestTimestampFilter.EVENT + " although timestamp on right Border " + rightBorder
-				, this.sinkPlugin.getList().isEmpty());
+		Assert.assertFalse("Filter ignored event " + TestTimestampFilter.EVENT + " although timestamp on right Border " + rightBorder,
+				this.sinkPlugin.getList().isEmpty());
 		Assert.assertTrue(this.sinkPlugin.getList().size() == 1);
 		Assert.assertSame(this.sinkPlugin.getList().get(0), TestTimestampFilter.EVENT);
 	}
@@ -209,7 +218,7 @@ public final class TestTimestampFilter extends AbstractKiekerTest {
 	 * Given a {@link TimestampFilter} selecting {@link AbstractTraceEvent}s within an interval <i>[a,b]</i>,
 	 * assert that a {@link AbstractTraceEvent} <i>e</i> with <i>e.timestamp &gt; a</i> and <i>r.timestamp
 	 * &gt; a </i> does pass the filter.
-	 * 
+	 *
 	 * @throws AnalysisConfigurationException
 	 *             If the internally assembled analysis configuration is somehow invalid.
 	 * @throws IllegalStateException
@@ -224,8 +233,8 @@ public final class TestTimestampFilter extends AbstractKiekerTest {
 		this.reader.addObject(TestTimestampFilter.EVENT);
 		this.controller.run();
 		Assert.assertEquals(AnalysisController.STATE.TERMINATED, this.controller.getState());
-		Assert.assertFalse("Filter ignored event " + TestTimestampFilter.EVENT + " although timestamp in interval [" + leftBorder + "," + rightBorder + "]"
-				, this.sinkPlugin.getList().isEmpty());
+		Assert.assertFalse("Filter ignored event " + TestTimestampFilter.EVENT + " although timestamp in interval [" + leftBorder + "," + rightBorder + "]",
+				this.sinkPlugin.getList().isEmpty());
 		Assert.assertTrue(this.sinkPlugin.getList().size() == 1);
 		Assert.assertSame(this.sinkPlugin.getList().get(0), TestTimestampFilter.EVENT);
 	}

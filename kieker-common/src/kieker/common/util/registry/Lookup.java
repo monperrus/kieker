@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright 2015 Kieker Project (http://kieker-monitoring.net)
+ * Copyright 2017 Kieker Project (http://kieker-monitoring.net)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,14 +29,32 @@ import java.util.Arrays;
  */
 public final class Lookup<E> implements ILookup<E> {
 
+	private final long id;
+
 	private transient volatile E[] array;
 
 	/**
 	 * Create a new lookup entry.
 	 */
-	@SuppressWarnings("unchecked")
 	public Lookup() {
+		this(RegistryUtil.generateId());
+	}
+
+	/**
+	 * Creates a new lookup with the given ID.
+	 *
+	 * @param id
+	 *            The ID to use for this lookup
+	 */
+	@SuppressWarnings("unchecked")
+	public Lookup(final long id) {
+		this.id = id;
 		this.array = (E[]) new Object[0];
+	}
+
+	@Override
+	public long getId() {
+		return this.id;
 	}
 
 	@Override
@@ -99,7 +117,7 @@ public final class Lookup<E> implements ILookup<E> {
 	}
 
 	@Override
-	public boolean set(final E value, final int id) {
+	public boolean set(final E value, final int id) { // NOCS Ignore hiding the ID field
 		synchronized (this) {
 			if (id < this.array.length) {
 				if (null == this.array[id]) {
@@ -121,14 +139,14 @@ public final class Lookup<E> implements ILookup<E> {
 	}
 
 	/**
-	 * @deprecated This method is not supported by this implementation.
+	 * @deprecated (won't be removed) This method is not supported by this implementation.
 	 *
 	 * @param recordReceiver
 	 *            has no special property.
 	 */
 	@Override
 	@Deprecated
-	public void setRecordReceiver(final IMonitoringRecordReceiver recordReceiver) {
+	public void setRecordReceiver(final IRegistryRecordReceiver recordReceiver) {
 		throw new UnsupportedOperationException();
 	}
 
