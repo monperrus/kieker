@@ -42,12 +42,14 @@
 		<exclude name="NPathComplexity" />
 		<exclude name="OnlyOneReturn" />
 		<exclude name="PackageCase" />
-		<!-- startsWith is better: it returns false instead of an IndexOutOfBoundsException and its name reflects its purpose -->
+		<!-- startsWith is better: it returns false instead of an IndexOutOfBoundsException 
+			and its name reflects its purpose -->
 		<exclude name="SimplifyStartsWith" />
 		<exclude name="ShortClassName" />
 		<exclude name="ShortVariable" />
 		<exclude name="SignatureDeclareThrowsException" />
-		<!-- Java automatically compiles to StringBuilder and StringBuffer is unnecessarily synchronized -->
+		<!-- Java automatically compiles to StringBuilder and StringBuffer is unnecessarily 
+			synchronized -->
 		<exclude name="UseStringBufferForStringAppends" />
 		<exclude name="TooManyMethods" />
 		<exclude name="UnnecessaryConstructor" />
@@ -70,8 +72,12 @@
 		</properties>
 	</rule>
 
-<!-- 	<rule ref="rulesets/java/logging-jakarta-commons.xml/GuardLogStatement"> -->
-<!-- 		<priority>3</priority> -->
-<!-- 	</rule> -->
+	<!-- <rule ref="rulesets/java/logging-jakarta-commons.xml/GuardLogStatement"> -->
+	<!-- <priority>3</priority> -->
+	<!-- </rule> -->
+
+	<rule ref="rulesets/chw/basic.xml">
+
+	</rule>
 
 </ruleset>

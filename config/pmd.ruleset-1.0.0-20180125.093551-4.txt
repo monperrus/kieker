@@ -1,0 +1,3 @@
+Custom rule set taken from:
+	https://build.se.informatik.uni-kiel.de/chw/custompmdrules
+
