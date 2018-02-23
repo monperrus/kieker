@@ -25,7 +25,7 @@ node('kieker-slave-docker') {
     }
 
     stage ('2-unit-test logs') {
-        sh 'docker run --rm -u `id -u` -v ' + env.WORKSPACE + ':/opt/kieker '+DOCKER_IMAGE_NAME+' /bin/bash -c "cd /opt/kieker; ./gradlew -S test cloverAggregateReports cloverGenerateReport"'
+        sh 'docker run --rm -u `id -u` -v ' + env.WORKSPACE + ':/opt/kieker '+DOCKER_IMAGE_NAME+' /bin/bash -c "cd /opt/kieker; ./gradlew -S test cloverAggregateReports"'
         junit '**/build/test-results/test/*.xml'
         step([
 		    $class: 'CloverPublisher',
